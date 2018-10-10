@@ -222,8 +222,9 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	//developer irfan mumtaz
 	Route::get('reports/brand-share', 'Admin\ReportController@brandShare')->name('brandShareIndex');
 	Route::post('reports/brand-share-ajax', 'Admin\ReportController@brandShareAjax')->name('brandShareAjax');
-	Route::get('reports/gender-wise', 'Admin\ReportController@genderWise')->name('genderWise');
-	Route::post('reports/gender-wise-ajax', 'Admin\ReportController@genderWiseAjax')->name('genderWiseAjax');
+	Route::get('reports/consumer-survery', 'Admin\ReportController@genderWise')->name('genderWise');
+	Route::post('reports/consumer-survery-ajax', 'Admin\ReportController@genderWiseAjax')->name('genderWiseAjax');
+	Route::get('/get-shops-by-brands/{id?}', 'Admin\ReportController@getShopsByBrands')->name('getShopsByBrands');
 });
 Route::get('clear', function () {
 	
