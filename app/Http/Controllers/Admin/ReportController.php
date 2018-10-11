@@ -15,7 +15,8 @@ class ReportController extends Controller
     //
 
     public function brandShare(){
-    	$data['brands'] = Brands::all();
+        $data['brands'] = Brands::all();
+    	$data['shops'] = Stores::all();
     	$categories = new Categories();
     	$data['saleType'] = $categories->categoryStatus();
     	return view('admin.brand-share.index')->with($data);
