@@ -8,6 +8,7 @@ use App\Models\Brands;
 use App\Models\Categories;
 use App\Models\Stores;
 use App\sales;
+use App\city;
 use DB;
 
 class ReportController extends Controller
@@ -303,6 +304,14 @@ class ReportController extends Controller
             
         }
         echo json_encode($ageGroup);
+    }
+
+    public function interception(){
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['shops'] = Stores::all();
+        $data['employees'] = Employee::where('Designation', 7)->get();
+        dd($data);
     }
 
 

@@ -225,6 +225,7 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	Route::get('reports/consumer-survery', 'Admin\ReportController@genderWise')->name('genderWise');
 	Route::post('reports/consumer-survery-ajax', 'Admin\ReportController@genderWiseAjax')->name('genderWiseAjax');
 	Route::get('/get-shops-by-brands/{id?}', 'Admin\ReportController@getShopsByBrands')->name('getShopsByBrands');
+	Route::get('/reports/interception-report', 'Admin\ReportController@interception')->name('interception');
 });
 Route::get('clear', function () {
 	
