@@ -7,7 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Brands;
 use App\Models\Categories;
 use App\Models\Stores;
+use App\Employee;
 use App\sales;
+use App\Breaks;
+use App\city;
 use DB;
 
 class ReportController extends Controller
@@ -25,19 +28,19 @@ class ReportController extends Controller
     public function brandShareAjax(Request $request){
     	switch ($request->request_to) {
     		case 'brand_share':
-    				$this->brandShareFilter($request->only('sale_type', 'brand', 'report_from', 'report_to'));
+    				$this->brandShareFilter($request->only('sale_type', 'brand', 'shops', 'report_from', 'report_to'));
     			break;
 
     		case 'interception_brand':
-    				$this->inteceptionBrandShare($request->only('brand', 'report_from', 'report_to'));
+    				$this->inteceptionBrandShare($request->only('brand', 'shops', 'report_from', 'report_to'));
     			break;
 
     		case 'total_interception':
-    				$this->totalInterception($request->only('brand', 'report_from', 'report_to'));
+    				$this->totalInterception($request->only('brand', 'shops', 'report_from', 'report_to'));
     			break;
 
             case 'target_sale':
-                    $this->totalVsSale($request->only('brand', 'report_from', 'report_to'));
+                    $this->totalVsSale($request->only('brand', 'shops', 'report_from', 'report_to'));
                 break;
     		
     		default:
@@ -53,8 +56,13 @@ class ReportController extends Controller
     	$brand = Brands::query();
     	$brand->select('c.Category as name', DB::raw('count(o.id) as y'));
     	$brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
-    	$brand->join('Orders as o', 'o.skuCategory', '=', 'c.id', 'inner');
-    	$brand->where('brands.id', $req['brand']);
+        $brand->join('Orders as o', 'o.skuCategory', '=', 'c.id', 'inner');
+        if($req['brand'] != -1){
+            $brand->where('brands.id', $req['brand']);
+        }
+        if($req['shops'] != -1){
+            $brand->where('o.storeId', $req['shops']);
+        }
     	$brand->where('c.Competition', $req['sale_type']);
     	$brand->whereBetween('o.created_at', $date);
     	$brand->groupBy('o.skuCategory');
@@ -72,7 +80,12 @@ class ReportController extends Controller
     	$brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
     	$brand->join('skus as s', 's.category_id', '=', 'c.id', 'inner');
     	$brand->join('Orders as o', 'o.SKU', '=', 's.id', 'inner');
-    	$brand->where('brands.id', $req['brand']);
+        if($req['brand'] != -1){
+            $brand->where('brands.id', $req['brand']);
+        }
+        if($req['shops'] != -1){
+            $brand->where('o.storeId', $req['shops']);
+        }
     	$brand->whereBetween('o.created_at', $date);
     	$brand->groupBy('o.SKU');
     	$result = $brand->get();
@@ -89,7 +102,13 @@ class ReportController extends Controller
         $brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
         $brand->join('Orders as o', 'o.skuCategory', '=', 'c.id', 'inner');
         $brand->join('shops as s', 'o.storeId', '=', 's.id', 'inner');
-        $brand->where('brands.id', $req['brand']);
+        
+        if($req['brand'] != -1){
+            $brand->where('brands.id', $req['brand']);
+        }
+        if($req['shops'] != -1){
+            $brand->where('o.storeId', $req['shops']);
+        }
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('o.storeId');
         $result = $brand->get();
@@ -102,14 +121,20 @@ class ReportController extends Controller
     	$date[1] = $req['report_to'] ? $req['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
 
     	$brand = Brands::query();
-    	$brand->select('t.created_at as categories', DB::raw('sum(s.Price * t.skutargets) as sale_target'), DB::raw('sum(s.Price * o.noItem) as sale'));
+    	$brand->select(DB::raw('LEFT(t.created_at, 10) as categories'), DB::raw('sum(s.Price) * sum(t.skutargets) as sale_target'), DB::raw('sum(s.Price) * sum(o.noItem) as sale'));
     	$brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
     	$brand->join('skus as s', 's.category_id', '=', 'c.id', 'inner');
         $brand->join('skutargets as t', 's.id', '=', 't.sku_id', 'inner');
     	$brand->join('Orders as o', 'o.SKU', '=', 's.id', 'left');
-    	$brand->where('brands.id', $req['brand']);
+    	
+        if($req['brand'] != -1){
+            $brand->where('brands.id', $req['brand']);
+        }
+        if($req['shops'] != -1){
+            $brand->where('o.storeId', $req['shops']);
+        }
     	$brand->whereBetween('o.created_at', $date);
-    	$brand->groupBy('t.created_at');
+    	$brand->groupBy('categories');
     	$result = $brand->get();
 
     	echo json_encode($result);
@@ -139,11 +164,6 @@ class ReportController extends Controller
                 # code...
                 break;
         }
-    }
-
-    public function getShopsByBrands($id){
-        $shops = Stores::select('name', 'id')->where('brand_id', $id)->get();
-        echo json_encode($shops);
     }
 
     private function genderWiseReport($request){
@@ -304,6 +324,172 @@ class ReportController extends Controller
             
         }
         echo json_encode($ageGroup);
+    }
+
+    public function interception(){
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['shops'] = Stores::all();
+        $data['employees'] = Employee::where('Designation', 7)->get();
+        
+        return view('admin.brand-share.interception')->with($data);
+    }
+
+    public function interceptionReport(Request $request){
+
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['shops'] = Stores::all();
+        $data['employees'] = Employee::where('Designation', 7)->get();
+
+
+        $data['interception'] = $this->interceptionReq($request->only($request->report_from, $request->report_to, $request->brands, $request->cities, $request->shops, $request->employees));
+        $data['competitor'] = $this->competitor($request->only($request->report_from, $request->report_to, $request->brands, $request->cities, $request->shops, $request->employees));
+        $data['noSale'] = $this->noSale($request->only($request->report_from, $request->report_to, $request->brands, $request->cities, $request->shops, $request->employees));
+
+        return view('admin.brand-share.interception')->with($data);
+    }
+
+    private function interceptionReq($request){
+
+        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
+
+        $sales = sales::query();
+        $sales->select("*", "sales.created_at as date");
+        $sales->join("shops as s", "s.id", "=", 'sales.Location');
+        // $sales->join("brands as p", "p.id", "=", 'sales.pBrand');
+        if($request['brands'] != -1){
+            $sales->where('pBrand', '"'.$request['brands'].'"');
+        }
+        if($request['cities'] != -1){
+            $sales->where('City', "like", '"'.$request['cities'].'"');
+        }
+        if($request['shops'] != -1){
+            $sales->where('Location', $request['shops']);
+        }
+        if($request['employees'] != -1){
+            $sales->where('empId', $request['employees']);
+        }
+
+        $sales->whereBetween('sales.created_at', $date);
+        return $sales->get();
+    }
+
+    private function competitor($request){
+
+        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
+
+        $sales = sales::query();
+        $sales->select("*");
+        $sales->select("*", "sales.created_at as date");
+        $sales->join("shops as s", "s.id", "=", 'sales.Location');
+        if($request['brands'] != -1){
+            $sales->where('pBrand', '"'.$request['brands'].'"');
+        }
+        if($request['cities'] != -1){
+            $sales->where('City', "like", '"'.$request['cities'].'"');
+        }
+        if($request['shops'] != -1){
+            $sales->where('Location', $request['shops']);
+        }
+        if($request['employees'] != -1){
+            $sales->where('empId', $request['employees']);
+        }
+        $sales->where('sales.saleStatus', 1);
+
+        $sales->whereBetween('sales.created_at', $date);
+        return $sales->get();
+    }
+
+    private function noSale($request){
+
+        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
+
+        $sales = sales::query();
+        $sales->select("*");
+        $sales->select("*", "sales.created_at as date");
+        $sales->join("shops as s", "s.id", "=", 'sales.Location');
+        if($request['brands'] != -1){
+            $sales->where('pBrand', '"'.$request['brands'].'"');
+        }
+        if($request['cities'] != -1){
+            $sales->where('City', "like", '"'.$request['cities'].'"');
+        }
+        if($request['shops'] != -1){
+            $sales->where('Location', $request['shops']);
+        }
+        if($request['employees'] != -1){
+            $sales->where('empId', $request['employees']);
+        }
+        $sales->where('sales.saleStatus', 0);
+
+        $sales->whereBetween('sales.created_at', $date);
+        return $sales->get();
+    }
+
+    public function break(){
+        $data['employees'] = Employee::where('Designation', 7)->get();
+        return view('admin.brand-share.break')->with($data);
+    }
+
+    public function breakReport(Request $request){
+        $data['employees'] = Employee::where('Designation', 7)->get();
+
+        $date[0] = $request->report_from ? $request->report_from. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request->report_to ? $request->report_to. " 23:59:59" : date('Y-m-d H:i:s');
+
+        $break = Breaks::query();
+        $break->join("employees as emp", "emp.id", "=", 'emp_break.emp_id');
+        $break->join("break as b", "b.id", "=", 'emp_break.break_id');
+        $break->whereBetween('emp_break.created_at', $date);
+
+        if($request->employees != -1){
+            $break->where('emp_break', $request->employees);
+        }
+
+        $data['breaks'] = $break->get();
+        return view('admin.brand-share.break')->with($data);
+    }
+
+
+
+    //ajax requests
+    public function getShopsByBrands($id){
+        $shops = Stores::query();
+        $shops->select('name', 'id');
+        if($id != -1){
+            $shops->where('brand_id', $id);
+        }
+        $shops = $shops->get();
+        echo json_encode($shops);
+    }
+
+    public function getCitiesByBrands($id){
+        $cities = city::query();
+        $cities->select('cities.name', 'cities.id');
+        $cities->join('brand_cities as bc', 'bc.city_id', '=', 'cities.id', 'inner');
+        if($id != -1){
+            $cities->where('bc.brand_id', $id);
+        }
+        $cities = $cities->get();
+        echo json_encode($cities);
+    }
+
+    public function getBasByBrands($id){
+        $employees = Employee::query();
+        $employees->select('EmployeeName as name', 'employees.id');
+        $employees->join('brand_employees as be', 'be.emp_id', '=', 'employees.id', 'inner');
+        if($id != -1){
+            $employees->where('be.brand_id', $id);
+        }
+        $employees = $employees->get();
+        echo json_encode($employees);
     }
 
 
