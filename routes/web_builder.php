@@ -227,7 +227,9 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	Route::get('reports/interception', 'Admin\ReportController@interception')->name('interception');
 	Route::post('reports/interception-report', 'Admin\ReportController@interceptionReport')->name('interceptionReport');
 	Route::get('reports/break', 'Admin\ReportController@break')->name('break');
-	Route::post('reports/break-report', 'Admin\ReportController@breakReport')->name('breakReport');
+	Route::any('reports/break-report', 'Admin\ReportController@breakReport')->name('breakReport');
+	Route::get('reports/out-of-stock', 'Admin\ReportController@outOfStock')->name('outOfStock');
+	Route::any('reports/out-of-stock-report', 'Admin\ReportController@outOfStockReport')->name('outOfStockReport');
 
 
 

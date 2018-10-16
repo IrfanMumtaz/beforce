@@ -8,6 +8,7 @@ use App\Models\Brands;
 use App\Models\Categories;
 use App\Models\Stores;
 use App\Employee;
+use App\Order;
 use App\sales;
 use App\Breaks;
 use App\city;
@@ -337,6 +338,10 @@ class ReportController extends Controller
 
     public function interceptionReport(Request $request){
 
+        if(!$request->isMethod('post')){
+            return redirect()->route('admin.interception');
+        }
+
         $data['brands'] = Brands::all();
         $data['cities'] = City::all();
         $data['shops'] = Stores::all();
@@ -434,11 +439,20 @@ class ReportController extends Controller
     }
 
     public function break(){
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['shops'] = Stores::all();
         $data['employees'] = Employee::where('Designation', 7)->get();
         return view('admin.brand-share.break')->with($data);
     }
 
     public function breakReport(Request $request){
+        if(!$request->isMethod('post')){
+            return redirect()->route('admin.break');
+        }
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['shops'] = Stores::all();
         $data['employees'] = Employee::where('Designation', 7)->get();
 
         $date[0] = $request->report_from ? $request->report_from. " 00:00:00" : date('Y-m-d H:i:s');
@@ -453,8 +467,65 @@ class ReportController extends Controller
             $break->where('emp_break', $request->employees);
         }
 
+        if($request->brands != -1){
+            $break->where('emp.SelectBrand', $request->brands);
+        }
+
+        if($request->cities != -1){
+            $break->where('emp.ShopCity', $request->cities);
+        }
+
+        if($request->shops != -1){
+            $break->where('emp.Shop', $request->shops);
+        }
+
         $data['breaks'] = $break->get();
+        // return redirect()->back()->with($data);
         return view('admin.brand-share.break')->with($data);
+    }
+
+    public function outOfStock(){
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['shops'] = Stores::all();
+        $data['employees'] = Employee::where('Designation', 7)->get();
+        return view('admin.brand-share.out-of-stock')->with($data);
+    }
+
+    public function outOfStockReport(Request $request){
+        if(!$request->isMethod('post')){
+            return redirect()->route('admin.outOfStock');
+        }
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['shops'] = Stores::all();
+        $data['employees'] = Employee::where('Designation', 7)->get();
+
+        $date[0] = $request->report_from ? $request->report_from. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request->report_to ? $request->report_to. " 23:59:59" : date('Y-m-d H:i:s');
+
+        $order = Order::query();
+        $order->whereBetween('orders.created_at', $date);
+        $order->where('orders.noItem', 0);
+
+        if($request->brands != -1){
+            
+            $order->join("categories as c", "c.id", "=", 'orders.skuCategory');
+            $order->join("brands as b", "b.id", "=", 'c.brand_id');
+            $order->where('b.id', $request->brands);
+        }
+
+        // if($request->cities != -1){
+        //     $order->where('emp.ShopCity', $request->cities);
+        // }
+
+        if($request->shops != -1){
+            $order->where('orders.storeId', $request->shops);
+        }
+
+        $data['breaks'] = $order->get();
+        // return redirect()->back()->with($data);
+        return view('admin.brand-share.out-of-stock')->with($data);
     }
 
 

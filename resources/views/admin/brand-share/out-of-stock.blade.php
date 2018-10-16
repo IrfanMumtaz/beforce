@@ -1,7 +1,7 @@
 @extends('admin/layouts/default')
 
 @section('title')
-Break Report
+Out Of Stock Report
 @parent
 @stop
 
@@ -23,7 +23,7 @@ Break Report
 @section('content')
 
 <section class="content-header">
-	<h1>Brand Share</h1>
+	<h1>Out Of Stock</h1>
 	<ol class="breadcrumb">
 		<li>
 			<a href="#">
@@ -31,7 +31,7 @@ Break Report
 			</a>
 		</li>
 		<li><a href="#"> Reports</a></li>
-		<li class="active">Break Report</li>
+		<li class="active">Out Of Stock Report</li>
 	</ol>
 </section>
 
@@ -43,7 +43,7 @@ Break Report
 			<div class="panel panel-primary">
 				<div class="panel-heading">
 					<h3 class="panel-title">
-						Break Report
+						Out Of Stock Report
 					</h3>
 					<span class="pull-right">
 						<i class="glyphicon glyphicon-chevron-up showhide clickable" title="Hide Panel content"></i>
@@ -51,7 +51,7 @@ Break Report
 					</span>
 				</div>
 				<div class="form">
-					<form method="POST" action="{{ route('admin.breakReport') }}">
+					<form method="POST" action="{{ route('admin.outOfStockReport') }}">
 						{{ csrf_field() }}
 						<div class="row">
 							<div class="col-md-3 col-sm-6 col-xs-12">
@@ -100,7 +100,7 @@ Break Report
 									</select>
 								</div>
 							</div>
-							<div class="col-md-3 col-sm-6 col-xs-12">
+							<!-- <div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control bae-brands" name="employees">
 										<option value="-1">All Employees</option>
@@ -111,7 +111,7 @@ Break Report
 										@endif
 									</select>
 								</div>
-							</div>
+							</div> -->
 							<div class="col-md-2 col-sm-4 col-xs-12">
 								<div class="form-group">
 									<input type="submit" class="btn btn-primary" name="submit" value="Filter">
@@ -121,7 +121,7 @@ Break Report
 					</form>
 				</div>
 				<div class="panel-body text-center graph-body">
-					<h2>Break Report</h2>
+					<h2>Out Of Stock Report</h2>
 					<table class="table interception-report">
 						<thead>
 							<tr>
@@ -131,7 +131,6 @@ Break Report
 								<th>Start Time</th>
 								<th>End Time</th>
 								<th>Date</th>
-								<th>Status</th>
 							</tr>
 						</thead>
 
@@ -145,7 +144,6 @@ Break Report
 									<td>{{ $int->StartTime }}</td>
 									<td>{{ $int->EndTime }}</td>
 									<td>{{ date('Y-m-d', strtotime($int->Date)) }}</td>
-									<td>{{ $int->Status ? "Active" : "In-Active" }}</td>
 								</tr>
 
 							@endforeach
