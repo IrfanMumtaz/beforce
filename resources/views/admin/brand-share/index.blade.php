@@ -50,7 +50,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control" name="sale_type">
-										<!-- <option value="-1">Select Sale Type</option> -->
+										<!-- <option value="-1">All Shops</option> -->
 										@if(isset($saleType) && count($saleType) > 0)
 										@foreach($saleType as $sale)
 										<option value="{{ $sale->id }}">{{ $sale->sale_type }}</option>
@@ -62,7 +62,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control brand_change" name="brand" target=".brand_shop">
-										<!-- <option value="-1">Select Brand</option> -->
+										<option value="-1">All Brands</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
 										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
@@ -74,7 +74,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control brand_shop" name="shops">
-										<option value="-1">Select Sale Type</option>
+										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
 										<option value="{{ $s->id }}">{{ $s->name }}</option>
@@ -116,7 +116,7 @@ Brand Share
 			<div class="panel panel-primary">
 				<div class="panel-heading">
 					<h3 class="panel-title">
-						Interception Brand Share Report
+						Interception Sale Share Report
 					</h3>
 					<span class="pull-right">
 						<i class="glyphicon glyphicon-chevron-up showhide clickable" title="Hide Panel content"></i>
@@ -132,7 +132,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control brand_change" name="brand"  target=".sku_shop">
-										<!-- <option value="-1">Select Brand</option> -->
+										<option value="-1">All Brands</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
 										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
@@ -144,7 +144,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control sku_shop" name="shops">
-										<option value="-1">Select Sale Type</option>
+										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
 										<option value="{{ $s->id }}">{{ $s->name }}</option>
@@ -202,7 +202,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control brand_change" name="brand"  target=".stores_shop">
-										<!-- <option value="-1">Select Brand</option> -->
+										<option value="-1">All Brands</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
 										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
@@ -214,7 +214,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control stores_shop" name="shops">
-										<option value="-1">Select Sale Type</option>
+										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
 										<option value="{{ $s->id }}">{{ $s->name }}</option>
@@ -270,8 +270,8 @@ Brand Share
 						<div class="row">
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control" name="brand"  target=".target_shop">
-										<!-- <option value="-1">Select Brand</option> -->
+									<select class="form-control brand_change" name="brand"  target=".target_shop">
+										<option value="-1">All Brands</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
 										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
@@ -282,8 +282,8 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_change" name="shops" >
-										<option value="-1">Select Sale Type</option>
+									<select class="form-control target_shop" name="shops" >
+										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
 										<option value="{{ $s->id }}">{{ $s->name }}</option>
@@ -491,6 +491,26 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 
 	}
 
+	$(".brand_change").on("change", function(){
+		let target = $(this).attr("target");
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getShopsByBrands') }}/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Shops</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		})
+	});
 
 </script>
 @stop

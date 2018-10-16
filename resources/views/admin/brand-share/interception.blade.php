@@ -42,27 +42,24 @@ Brand Share
 					</span>
 				</div>
 				<div class="form">
-					<form method="POST" action="{{ route('admin.brandShareAjax') }}">
+					<form method="POST" action="{{ route('admin.interceptionReport') }}">
 						{{ csrf_field() }}
-						<input type="hidden" name="request_to" value="brand_share">
-						<input type="hidden" name="type" value="pie">
+						<input type="hidden" name="request_to" value="complete_interception">
 						<div class="row">
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control" name="sale_type">
-										<!-- <option value="-1">Select Sale Type</option> -->
-										@if(isset($saleType) && count($saleType) > 0)
-										@foreach($saleType as $sale)
-										<option value="{{ $sale->id }}">{{ $sale->sale_type }}</option>
-										@endforeach
-										@endif
-									</select>
+									<input type="date" class="form-control" name="report_from">
 								</div>
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control" name="brand">
-										<!-- <option value="-1">Select Brand</option> -->
+									<input type="date" class="form-control" name="report_to">
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control brand_change brand_to_city brand_to_bas" name="brands" target=".inter_shops" city_target=".inter_cities" bas_target=".inter_bas">
+										<option value="-1">All Brands</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
 										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
@@ -71,14 +68,40 @@ Brand Share
 									</select>
 								</div>
 							</div>
-							<div class="col-md-2 col-sm-4 col-xs-12">
+							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<input type="date" class="form-control" name="report_from">
+									<select class="form-control inter_cities" name="cities">
+										<option value="-1">All Cities</option>
+										@if(isset($cities) && count($cities) > 0)
+										@foreach($cities as $city)
+										<option value="{{ $city->id }}">{{ $city->name }}</option>
+										@endforeach
+										@endif
+									</select>
 								</div>
 							</div>
-							<div class="col-md-2 col-sm-4 col-xs-12">
+							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<input type="date" class="form-control" name="report_to">
+									<select class="form-control inter_shops" name="shops">
+										<option value="-1">All Shops</option>
+										@if(isset($shops) && count($shops) > 0)
+										@foreach($shops as $shop)
+										<option value="{{ $shop->id }}">{{ $shop->name }}</option>
+										@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control inter_bas" name="employees">
+										<option value="-1">All BAS</option>
+										@if(isset($employees) && count($employees) > 0)
+										@foreach($employees as $employee)
+										<option value="{{ $employee->id }}">{{ $employee->EmployeeName }}</option>
+										@endforeach
+										@endif
+									</select>
 								</div>
 							</div>
 							<div class="col-md-2 col-sm-4 col-xs-12">
@@ -90,8 +113,13 @@ Brand Share
 					</form>
 				</div>
 				<div class="panel-body text-center graph-body">
-					<h3>Interception Report</h3>
-					<div id="brand_share" style="min-width: 310px; height: 400px; max-width: 100%; margin: 0 auto"></div>
+					<table>
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>Name</th>
+						</tr>
+					</table>
 				</div>
 			</div>
 		</div>
@@ -113,7 +141,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 <script type="text/javascript" src="{{ asset('assets/js/pages/custommaps.js') }}"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script type="text/javascript">
-	$(".form form").on('submit',function(e){
+	/* $(".form form").on('submit',function(e){
 		e.preventDefault();
 		data = $(this).serialize();
 		var from = $(this).find("input[name=report_from]").val();
@@ -144,133 +172,72 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 				console.log(err);
 			}
 		});
+	}); */
+
+	$(".brand_change").on("change", function(){
+		let target = $(this).attr("target");
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getShopsByBrands') }}/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Shops</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		})
 	});
 
+	$(".brand_to_city").on("change", function(){
+		let target = $(this).attr("city_target");
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getCitiesByBrands') }}/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				console.log(res);
+				let html = `<option value="-1">All Cities</option>`;
 
-	function createPieChart(data, target, type, _title){
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		})
+	});
 
+	$(".brand_to_bas").on("change", function(){
+		let target = $(this).attr("bas_target");
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getBasByBrands') }}/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				console.log(res);
+				let html = `<option value="-1">All Bas</option>`;
 
-		Highcharts.chart(target, {
-			chart: {
-				plotBackgroundColor: null,
-				plotBorderWidth: null,
-				plotShadow: false,
-				type: type
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
 			},
-			title: {
-				text: _title
-			},
-			tooltip: {
-				pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-			},
-			plotOptions: {
-				pie: {
-					allowPointSelect: true,
-					cursor: 'pointer',
-					dataLabels: {
-						enabled: true,
-						format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-						style: {
-							color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-						}
-					}
-				}
-			},
-			series: [{
-				name: 'Brands',
-				colorByPoint: true,
-				data: data
-			}]
-		});
-	}
-
-	function createBarChart(data, target, type, _title){
-		let dates = new Array() ;
-		let sale = new Array() ;
-		let _target = new Array() ;
-
-		data.forEach(function(d){
-			dates.push(d.categories.split(" ")[0]);
-			sale.push(parseFloat(d.sale));
-			_target.push(parseFloat(d.sale_target));
-		});
-		console.log(dates)
-		console.log(sale)
-		console.log(_target)
-		Highcharts.chart('target_sale', {
-			chart: {
-				zoomType: 'xy'
-			},
-			title: {
-				text: 'Targets VS Sale'
-			},
-			subtitle: {
-				text: "title"
-			},
-			xAxis: [{
-				categories: dates,
-				crosshair: true
-			}],
-            yAxis: [{// Primary yAxis
-            	labels: {
-            		format: '{value}',
-            		style: {
-            			color: Highcharts.getOptions().colors[1]
-            		}
-            	},
-            	title: {
-            		text: 'Targets',
-            		style: {
-            			color: Highcharts.getOptions().colors[1]
-            		}
-            	}
-                }, {// Secondary yAxis
-                	title: {
-                		text: 'Sale',
-                		style: {
-                			color: Highcharts.getOptions().colors[0]
-                		}
-                	},
-                	labels: {
-                		format: '{value}',
-                		style: {
-                			color: Highcharts.getOptions().colors[0]
-                		}
-                	},
-                	opposite: true
-                }],
-                tooltip: {
-                	shared: true
-                },
-                legend: {
-                	layout: 'vertical',
-                	align: 'left',
-                	x: 120,
-                	verticalAlign: 'top',
-                	y: 100,
-                	floating: true,
-                	backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-                },
-                series: [{
-                	name: 'Targets',
-                	type: 'column',
-                	color: "#339933",
-                	data: _target,
-                	tooltip: {
-                		valueSuffix: ''
-                	}
-
-                }, {
-                	name: 'Sale',
-                	type: 'column',
-                	data: sale,
-                	tooltip: {
-                		valueSuffix: ''
-                	}
-                }]
-            });
-
-	}
+			error: function(err){
+				console.log(err);
+			}
+		})
+	});
 
 
 </script>
