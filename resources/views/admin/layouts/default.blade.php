@@ -206,7 +206,7 @@
 
 <!-- end of global js -->
 <!-- begin page level js -->
-@yield('footer_scripts')
+
         <!-- end page level js -->
 <script src="{{ asset('assets/vendors/select2/js/select2.js') }}" type="text/javascript"></script>
 <script language="javascript" type="text/javascript" src="{{ asset('assets/vendors/iCheck/js/icheck.js') }}"></script>
@@ -233,6 +233,6 @@
 <script type="text/javascript" src="{{ asset('assets/vendors/datatables/js/jquery.dataTables.js') }}"></script>
 <script type="text/javascript" src="{{ asset('assets/vendors/datatables/js/dataTables.bootstrap.js') }}"></script>
 <script type="text/javascript" src="{{ asset('assets/vendors/datatables/js/dataTables.responsive.js') }}"></script>
-
+@yield('footer_scripts')
 </body>
 </html>

@@ -224,12 +224,15 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	Route::post('reports/brand-share-ajax', 'Admin\ReportController@brandShareAjax')->name('brandShareAjax');
 	Route::get('reports/consumer-survery', 'Admin\ReportController@genderWise')->name('genderWise');
 	Route::post('reports/consumer-survery-ajax', 'Admin\ReportController@genderWiseAjax')->name('genderWiseAjax');
-	Route::get('/reports/interception-report', 'Admin\ReportController@interception')->name('interception');
-	Route::post('/reports/interception-report', 'Admin\ReportController@interceptionReport')->name('interceptionReport');
-	
-	
+	Route::get('reports/interception', 'Admin\ReportController@interception')->name('interception');
+	Route::post('reports/interception-report', 'Admin\ReportController@interceptionReport')->name('interceptionReport');
+	Route::get('reports/break', 'Admin\ReportController@break')->name('break');
+	Route::post('reports/break-report', 'Admin\ReportController@breakReport')->name('breakReport');
+
+
+
 	Route::get('/get-shops-by-brands/{id?}', 'Admin\ReportController@getShopsByBrands')->name('getShopsByBrands');
-	Route::get('/get-cities-by-brands/{id?}', 'Admin\ReportController@getCitiesByBrands')->name('getCitiesByBrands');
+	Route::get('/get-city-by-brands/{id?}', 'Admin\ReportController@getCitiesByBrands')->name('getCitiesByBrands');
 	Route::get('/get-bas-by-brands/{id?}', 'Admin\ReportController@getBasByBrands')->name('getBasByBrands');
 });
 Route::get('clear', function () {

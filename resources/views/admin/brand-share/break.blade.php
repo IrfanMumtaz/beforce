@@ -1,7 +1,7 @@
 @extends('admin/layouts/default')
 
 @section('title')
-Interception Report
+Break Report
 @parent
 @stop
 
@@ -31,7 +31,7 @@ Interception Report
 			</a>
 		</li>
 		<li><a href="#"> Reports</a></li>
-		<li class="active">Interception Report</li>
+		<li class="active">Break Report</li>
 	</ol>
 </section>
 
@@ -43,7 +43,7 @@ Interception Report
 			<div class="panel panel-primary">
 				<div class="panel-heading">
 					<h3 class="panel-title">
-						Interception Report
+						Break Report
 					</h3>
 					<span class="pull-right">
 						<i class="glyphicon glyphicon-chevron-up showhide clickable" title="Hide Panel content"></i>
@@ -51,9 +51,8 @@ Interception Report
 					</span>
 				</div>
 				<div class="form">
-					<form method="POST" action="{{ route('admin.interceptionReport') }}">
+					<form method="POST" action="{{ route('admin.breakReport') }}">
 						{{ csrf_field() }}
-						<input type="hidden" name="request_to" value="brand_share">
 						<div class="row">
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
@@ -65,7 +64,7 @@ Interception Report
 									<input type="date" class="form-control" name="report_to">
 								</div>
 							</div>
-							<div class="col-md-3 col-sm-6 col-xs-12">
+							<!-- <div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control brand_change city_change emp_change" name="brands" target=".brand_shop" city-target=".brand-city" bae-target=".bae-brands">
 										<option value="-1">All Brands</option>
@@ -79,13 +78,11 @@ Interception Report
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-
 									<select class="form-control brand-city" name="cities">
 										<option value="-1">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $city)
 										<option value="{{ $city->name }}">{{ $city->name }}</option>
-
 										@endforeach
 										@endif
 									</select>
@@ -93,18 +90,16 @@ Interception Report
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-
 									<select class="form-control brand_shop" name="shops">
 										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
 										<option value="{{ $s->id }}">{{ $s->name }}</option>
-
 										@endforeach
 										@endif
 									</select>
 								</div>
-							</div>
+							</div> -->
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control bae-brands" name="employees">
@@ -126,41 +121,29 @@ Interception Report
 					</form>
 				</div>
 				<div class="panel-body text-center graph-body">
-					<h2>Success full Interception Report</h2>
+					<h2>Break Report</h2>
 					<table class="table interception-report">
 						<thead>
 							<tr>
 								<th>#</th>
+								<th>Employee Name</th>
+								<th>Break Type</th>
+								<th>Start Time</th>
+								<th>End Time</th>
 								<th>Date</th>
-								<th>Store</th>
-								<th>BA</th>
-								<th>Name</th>
-								<th>Contact</th>
-								<th>Email</th>
-								<th>Previous Brand</th>
-								<th>Current Brand</th>
-								<th>Customer Type</th>
-								<th>Gender</th>
-								<th>Age</th>
 							</tr>
 						</thead>
 
 						<tbody>
-							@isset($interception)
-							@foreach($interception as $key =>  $int)
+							@isset($breaks)
+							@foreach($breaks as $key =>  $int)
 								<tr>
 									<td>{{ ++$key }}</td>
-									<td>{{ date('Y-m-d', strtotime($int->date)) }}</td>
-									<td>{{ $int->name }}</td>
-									<td>{{ $int->empName }}</td>
-									<td>{{ $int->cusName }}</td>
-									<td>{{ $int->Contact }}</td>
-									<td>{{ $int->email }}</td>
-									<td>{{ $int->pBrand }}</td>
-									<td>{{ $int->cBrand }}</td>
-									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
-									<td>{{ $int->gender }}</td>
-									<td>{{ $int->age }}</td>
+									<td>{{ $int->EmployeeName }}</td>
+									<td>{{ $int->break_type }}</td>
+									<td>{{ $int->StartTime }}</td>
+									<td>{{ $int->EndTime }}</td>
+									<td>{{ date('Y-m-d', strtotime($int->Date)) }}</td>
 								</tr>
 
 							@endforeach
@@ -169,91 +152,7 @@ Interception Report
 
 					</table>
 
-					<h2>Competitor Interception Report</h2>
-					<table class="table competitor-report">
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>Date</th>
-								<th>Store</th>
-								<th>BA</th>
-								<th>Name</th>
-								<th>Contact</th>
-								<th>Email</th>
-								<th>Previous Brand</th>
-								<th>Current Brand</th>
-								<th>Customer Type</th>
-								<th>Gender</th>
-								<th>Age</th>
-							</tr>
-						</thead>
 
-						<tbody>
-							@isset($competitor)
-							@foreach($competitor as $key =>  $int)
-								<tr>
-									<td>{{ ++$key }}</td>
-									<td>{{ date('Y-m-d', strtotime($int->date)) }}</td>
-									<td>{{ $int->name }}</td>
-									<td>{{ $int->empName }}</td>
-									<td>{{ $int->cusName }}</td>
-									<td>{{ $int->Contact }}</td>
-									<td>{{ $int->email }}</td>
-									<td>{{ $int->pBrand }}</td>
-									<td>{{ $int->cBrand }}</td>
-									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
-									<td>{{ $int->gender }}</td>
-									<td>{{ $int->age }}</td>
-								</tr>
-
-							@endforeach
-							@endisset
-						</tbody>
-
-					</table>
-
-					<h2>No Sale Interception Report</h2>
-					<table class="table nosale-report">
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>Date</th>
-								<th>Store</th>
-								<th>BA</th>
-								<th>Name</th>
-								<th>Contact</th>
-								<th>Email</th>
-								<th>Previous Brand</th>
-								<th>Current Brand</th>
-								<th>Customer Type</th>
-								<th>Gender</th>
-								<th>Age</th>
-							</tr>
-						</thead>
-
-						<tbody>
-							@isset($nosale)
-							@foreach($nosale as $key =>  $int)
-								<tr>
-									<td>{{ ++$key }}</td>
-									<td>{{ date('Y-m-d', strtotime($int->date)) }}</td>
-									<td>{{ $int->name }}</td>
-									<td>{{ $int->empName }}</td>
-									<td>{{ $int->cusName }}</td>
-									<td>{{ $int->Contact }}</td>
-									<td>{{ $int->email }}</td>
-									<td>{{ $int->pBrand }}</td>
-									<td>{{ $int->cBrand }}</td>
-									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
-									<td>{{ $int->gender }}</td>
-									<td>{{ $int->age }}</td>
-								</tr>
-
-							@endforeach
-							@endisset
-						</tbody>
-
-					</table>
 				</div>
 			</div>
 		</div>
@@ -282,7 +181,6 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
 <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
 <script type="text/javascript">
-
 	
 
 	$(".brand_change").on("change", function(){
@@ -349,14 +247,6 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 	});
 
 	$(".interception-report").DataTable({
-        dom: 'Bfrtip',
-        buttons: ['excel']
-    });
-	$(".competitor-report").DataTable({
-        dom: 'Bfrtip',
-        buttons: ['excel']
-    });
-	$(".nosale-report").DataTable({
         dom: 'Bfrtip',
         buttons: ['excel']
     });
