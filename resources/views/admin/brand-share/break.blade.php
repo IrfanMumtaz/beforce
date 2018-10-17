@@ -23,7 +23,7 @@ Break Report
 @section('content')
 
 <section class="content-header">
-	<h1>Brand Share</h1>
+	<h1>Break Report</h1>
 	<ol class="breadcrumb">
 		<li>
 			<a href="#">

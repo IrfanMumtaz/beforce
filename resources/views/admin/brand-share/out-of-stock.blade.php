@@ -126,24 +126,26 @@ Out Of Stock Report
 						<thead>
 							<tr>
 								<th>#</th>
-								<th>Employee Name</th>
-								<th>Break Type</th>
-								<th>Start Time</th>
-								<th>End Time</th>
+								<th>Brand</th>
+								<th>Category</th>
+								<th>SKU</th>
+								<th>Shop</th>
+								<th>City</th>
 								<th>Date</th>
 							</tr>
 						</thead>
 
 						<tbody>
-							@isset($breaks)
-							@foreach($breaks as $key =>  $int)
+							@isset($stock)
+							@foreach($stock as $key =>  $int)
 								<tr>
 									<td>{{ ++$key }}</td>
-									<td>{{ $int->EmployeeName }}</td>
-									<td>{{ $int->break_type }}</td>
-									<td>{{ $int->StartTime }}</td>
-									<td>{{ $int->EndTime }}</td>
-									<td>{{ date('Y-m-d', strtotime($int->Date)) }}</td>
+									<td>{{ $int->BrandName }}</td>
+									<td>{{ $int->Category }}</td>
+									<td>{{ $int->sku }}</td>
+									<td>{{ $int->shop }}</td>
+									<td>{{ $int->city }}</td>
+									<td>{{ date('Y-m-d', strtotime($int->date)) }}</td>
 								</tr>
 
 							@endforeach

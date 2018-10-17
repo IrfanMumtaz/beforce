@@ -225,7 +225,7 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	Route::get('reports/consumer-survery', 'Admin\ReportController@genderWise')->name('genderWise');
 	Route::post('reports/consumer-survery-ajax', 'Admin\ReportController@genderWiseAjax')->name('genderWiseAjax');
 	Route::get('reports/interception', 'Admin\ReportController@interception')->name('interception');
-	Route::post('reports/interception-report', 'Admin\ReportController@interceptionReport')->name('interceptionReport');
+	Route::any('reports/interception-report', 'Admin\ReportController@interceptionReport')->name('interceptionReport');
 	Route::get('reports/break', 'Admin\ReportController@break')->name('break');
 	Route::any('reports/break-report', 'Admin\ReportController@breakReport')->name('breakReport');
 	Route::get('reports/out-of-stock', 'Admin\ReportController@outOfStock')->name('outOfStock');

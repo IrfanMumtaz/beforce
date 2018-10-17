@@ -146,7 +146,19 @@
 	</li>
 	<li class="{{ Request::is('admin/assets*') ? 'active' : '' }}">
   	<a href="{!! route('admin.genderWise') !!}">
-     	<i class="fa fa-angle-double-right"></i>Gender Wise Report</a>
+     	<i class="fa fa-angle-double-right"></i>Customer Survey Report</a>
+	</li>
+	<li class="{{ Request::is('admin/assets*') ? 'active' : '' }}">
+  	<a href="{!! route('admin.break') !!}">
+     	<i class="fa fa-angle-double-right"></i>Break Report</a>
+	</li>
+	<li class="{{ Request::is('admin/assets*') ? 'active' : '' }}">
+  	<a href="{!! route('admin.interception') !!}">
+     	<i class="fa fa-angle-double-right"></i>Interception Report</a>
+	</li>
+	<li class="{{ Request::is('admin/assets*') ? 'active' : '' }}">
+  	<a href="{!! route('admin.outOfStock') !!}">
+     	<i class="fa fa-angle-double-right"></i>Out Of Stock Report</a>
 	</li>
 	</ul>
 </li>

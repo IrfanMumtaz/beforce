@@ -23,7 +23,7 @@ Interception Report
 @section('content')
 
 <section class="content-header">
-	<h1>Brand Share</h1>
+	<h1>Interception Report</h1>
 	<ol class="breadcrumb">
 		<li>
 			<a href="#">
@@ -37,6 +37,62 @@ Interception Report
 
 
 <section class="content">
+	<div class="row">
+		<div class="col-lg-4 col-md-4 col-sm-6 margin_10 animated fadeInLeftBig">
+			<!-- Trans label pie charts strats here-->
+			<div class="lightbluebg no-radius">
+				<a href="javascript:void(0)" style="color: #ffffff;" id="total_employees">
+				<div class="panel-body squarebox square_boxs">
+					<div class="col-xs-12 pull-left nopadmar">
+						<div class="row">
+							<div class="square_box col-xs-7 text-right">
+								<span>Total Interception</span>
+								<div class="number" id="myTargetElement1">{{ @$interception ? count($interception) : 0 }}</div>
+							</div>
+							<i class="fa fa-users fa-4x pull-right"></i>
+						</div>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		<div class="col-lg-4 col-md-4 col-sm-6 margin_10 animated fadeInLeftBig">
+			<!-- Trans label pie charts strats here-->
+			<div class="redbg no-radius">
+				<a href="javascript:void(0)" style="color: #ffffff;" id="total_employees">
+				<div class="panel-body squarebox square_boxs">
+					<div class="col-xs-12 pull-left nopadmar">
+						<div class="row">
+							<div class="square_box col-xs-7 text-right">
+								<span>Total Competitor</span>
+								<div class="number" id="myTargetElement1">{{ @$competitor ? count($competitor) : 0 }}</div>
+							</div>
+							<i class="fa fa-users fa-4x pull-right"></i>
+						</div>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		<div class="col-lg-4 col-md-4 col-sm-6 margin_10 animated fadeInLeftBig">
+			<!-- Trans label pie charts strats here-->
+			<div class="palebluecolorbg no-radius">
+				<a href="javascript:void(0)" style="color: #ffffff;" id="total_employees">
+				<div class="panel-body squarebox square_boxs">
+					<div class="col-xs-12 pull-left nopadmar">
+						<div class="row">
+							<div class="square_box col-xs-7 text-right">
+								<span>Total No Sale</span>
+								<div class="number" id="myTargetElement1">{{ @$noSale ? count($noSale) : 0 }}</div>
+							</div>
+							<i class="fa fa-users fa-4x pull-right"></i>
+						</div>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+	</div>
 	<!-- Interception Report -->
 	<div class="row ">
 		<div class="col-md-12">
@@ -156,8 +212,8 @@ Interception Report
 									<td>{{ $int->cusName }}</td>
 									<td>{{ $int->Contact }}</td>
 									<td>{{ $int->email }}</td>
-									<td>{{ $int->pBrand }}</td>
-									<td>{{ $int->cBrand }}</td>
+									<td>{{ $int->pName }}</td>
+									<td>{{ $int->cName }}</td>
 									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
 									<td>{{ $int->gender }}</td>
 									<td>{{ $int->age }}</td>
@@ -232,8 +288,8 @@ Interception Report
 						</thead>
 
 						<tbody>
-							@isset($nosale)
-							@foreach($nosale as $key =>  $int)
+							@isset($noSale)
+							@foreach($noSale as $key =>  $int)
 								<tr>
 									<td>{{ ++$key }}</td>
 									<td>{{ date('Y-m-d', strtotime($int->date)) }}</td>
