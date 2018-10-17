@@ -363,10 +363,10 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.name as cName, sales.pBrand, pSale.name as pName FROM sales LEFT JOIN skus AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN skus AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, sk.name as skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
 
         if($request['brands'] != -1){
-            $sql .= "sales.pBrand LIKE '%".$request['brands']."%' AND ";
+            $sql .= "sales.cBrand LIKE '%".$request['brands']."%' AND ";
         }
 
         if($request['cities'] != -1){
@@ -386,34 +386,13 @@ class ReportController extends Controller
         $sales = DB::select(DB::raw($sql));
         return $sales;
 
-        /* $sales = sales::query();
-        $sales->select("*", "sales.created_at as date", "cSale.name as competitor");
-        $sales->join("shops as s", "s.id", "=", 'sales.Location');
-        $sales->join("skus as cSale", "sales.cBrand", "=",'"cSale.id"'); */
-        // $sales->join("brands as p", "p.id", "=", 'sales.pBrand');
-        /* if($request['brands'] != -1){
-            $sales->where('pBrand', '"'.$request['brands'].'"');
-        }
-        if($request['cities'] != -1){
-            $sales->where('City', "like", '"'.$request['cities'].'"');
-        }
-        if($request['shops'] != -1){
-            $sales->where('Location', $request['shops']);
-        }
-        if($request['employees'] != -1){
-            $sales->where('empId', $request['employees']);
-        }
-
-        $sales->whereBetween('sales.created_at', $date); */
-        // dd($sql);
-        // dd($sales);
     }
 
     private function competitor($request){
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.name as cName, sales.pBrand, pSale.name as pName FROM sales LEFT JOIN skus AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN skus AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, sk.name as skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
 
         if($request['brands'] != -1){
             $sql .= "sales.pBrand LIKE '%".$request['brands']."%' AND ";
@@ -431,47 +410,22 @@ class ReportController extends Controller
             $sql .= "sales.empId = ".$request['employees']." AND ";
         }
         
-        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\" AND sales.saleStatus = 1";
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\" AND sales.saleStatus = 1 AND sales.cBrand NOT IN (SELECT CONCAT('\"',id,'\"') from brands)";
         
         $sales = DB::select(DB::raw($sql));
+
         return $sales;
  
-
-        /*
-        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
-        $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-
-
-        $sales = sales::query();
-        $sales->select("*");
-        $sales->select("*", "sales.created_at as date");
-        $sales->join("shops as s", "s.id", "=", 'sales.Location');
-        if($request['brands'] != -1){
-            $sales->where('pBrand', '"'.$request['brands'].'"');
-        }
-        if($request['cities'] != -1){
-            $sales->where('City', "like", '"'.$request['cities'].'"');
-        }
-        if($request['shops'] != -1){
-            $sales->where('Location', $request['shops']);
-        }
-        if($request['employees'] != -1){
-            $sales->where('empId', $request['employees']);
-        }
-        $sales->where('sales.saleStatus', 1);
-
-        $sales->whereBetween('sales.created_at', $date);
-        return $sales->get(); */
     }
 
     private function noSale($request){
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.name as cName, sales.pBrand, pSale.name as pName FROM sales LEFT JOIN skus AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN skus AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
 
         if($request['brands'] != -1){
-            $sql .= "sales.pBrand LIKE '%".$request['brands']."%' AND ";
+            $sql .= "sales.cBrand LIKE '%".$request['brands']."%' AND ";
         }
 
         if($request['cities'] != -1){

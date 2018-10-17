@@ -198,6 +198,7 @@ Interception Report
 								<th>Customer Type</th>
 								<th>Gender</th>
 								<th>Age</th>
+								<th>SKU</th>
 							</tr>
 						</thead>
 
@@ -217,6 +218,7 @@ Interception Report
 									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
 									<td>{{ $int->gender }}</td>
 									<td>{{ $int->age }}</td>
+									<td>{{ $int->skuName }}</td>
 								</tr>
 
 							@endforeach
@@ -241,6 +243,7 @@ Interception Report
 								<th>Customer Type</th>
 								<th>Gender</th>
 								<th>Age</th>
+								<th>SKU</th>
 							</tr>
 						</thead>
 
@@ -255,11 +258,12 @@ Interception Report
 									<td>{{ $int->cusName }}</td>
 									<td>{{ $int->Contact }}</td>
 									<td>{{ $int->email }}</td>
-									<td>{{ $int->pBrand }}</td>
-									<td>{{ $int->cBrand }}</td>
+									<td>{{ $int->pName }}</td>
+									<td>{{ $int->cName }}</td>
 									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
 									<td>{{ $int->gender }}</td>
 									<td>{{ $int->age }}</td>
+									<td>{{ $int->skuName }}</td>
 								</tr>
 
 							@endforeach
@@ -298,8 +302,8 @@ Interception Report
 									<td>{{ $int->cusName }}</td>
 									<td>{{ $int->Contact }}</td>
 									<td>{{ $int->email }}</td>
-									<td>{{ $int->pBrand }}</td>
-									<td>{{ $int->cBrand }}</td>
+									<td>{{ $int->pName }}</td>
+									<td>{{ $int->cName }}</td>
 									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
 									<td>{{ $int->gender }}</td>
 									<td>{{ $int->age }}</td>
