@@ -411,7 +411,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 					{
 						name: '20 - 25',
 						color : "#FFFF33",
-						data: [data['20-25']],
+						data: [data['21-25']],
 						tooltip: {
 							valueSuffix: (type == 'ratio') ? '%' : ''
 						}

@@ -276,13 +276,17 @@ class ReportController extends Controller
     }
 
     private function ageWiseReport($request){
+        
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
         $categories = Brands::select('categories.id', 'categories.Category')->join('categories', 'categories.brand_id', '=', 'brands.id', 'inner')->where('brands.id', $request['brand'])->get();
         $sales = Sales::Query();
         $sales->whereBetween('created_at', $date);  
         if($request['shops'] != -1){
-            $sales->where("location", $request['shops']);
+            $sales->where("Location", $request['shops']);
+        }
+        if($request['brand'] != -1){
+            $sales->where("cBrand", "LIKE",  "%".$request['brand']."%");
         }
         $sales = $sales->get();
 
@@ -401,7 +405,7 @@ class ReportController extends Controller
         }
 
         $sales->whereBetween('sales.created_at', $date); */
-// dd($sql);
+        // dd($sql);
         // dd($sales);
     }
 
@@ -431,9 +435,9 @@ class ReportController extends Controller
         
         $sales = DB::select(DB::raw($sql));
         return $sales;
-/* 
+ 
 
-
+        /*
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
 
