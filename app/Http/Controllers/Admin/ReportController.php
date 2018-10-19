@@ -144,6 +144,7 @@ class ReportController extends Controller
     public function genderWise(){
         $data['brands'] = Brands::all();
         $data['shops'] = Stores::all();
+        $data['cities'] = City::all();
         return view('admin.brand-share.gender-report')->with($data);
     }
     
@@ -159,6 +160,10 @@ class ReportController extends Controller
             
             case 'age_wise':
                 $this->ageWiseReport($request->only('shops', 'brand', 'report_from', 'report_to'));
+                break;
+            
+            case 'cluster_survey':
+                $this->clusterSurvey($request->only('shops', 'brand', 'report_from', 'cities'));
                 break;
 
             default:
@@ -331,6 +336,44 @@ class ReportController extends Controller
         echo json_encode($ageGroup);
     }
 
+    private function clusterSurvey($request){
+        
+        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request['report_from'] ? $request['report_from']. " 23:59:59" : date('Y-m-d H:i:s');
+        $categories = Brands::select('categories.id', 'categories.Category')->join('categories', 'categories.brand_id', '=', 'brands.id', 'inner')->where('brands.id', $request['brand'])->get();
+        $sales = Sales::Query();
+        $sales->whereBetween('created_at', $date);  
+        if($request['shops'] != -1){
+            $sales->where("Location", $request['shops']);
+        }
+        if($request['brand'] != -1){
+            $sales->where("cBrand", "LIKE",  "%".$request['brand']."%");
+        }
+        if($request['cities'] != -1){
+            $sales->where("City", "LIKE",  "%".$request['cities']."%");
+        }
+        $sales->where("saleStatus", 1);
+        $sales = $sales->get();
+        $sale = array();
+        $categories = array();
+        $saleGroup = array(
+                "00" => 0, "01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, 
+                "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, 
+                "12" => 0, "13" => 0, "14" => 0, "15" => 0, "16" => 0, "17" => 0, 
+                "18" => 0, "19" => 0, "20" => 0, "21" => 0, "22" => 0, "23" => 0);
+
+        foreach($sales as $s){
+            $hour = date("H", strtotime($s->created_at));
+            $saleGroup[(string)$hour] += 1;   
+        }
+        foreach($saleGroup as $k => $v){
+            $categories[] =$k;
+            $sale[] =$v;
+        }
+        $average = array_sum($saleGroup) / 24;
+        echo json_encode([$average,$categories, $sale]);
+    }
+
     public function interception(){
         $data['brands'] = Brands::all();
         $data['cities'] = City::all();
@@ -363,7 +406,7 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, sk.name as skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE ";
 
         if($request['brands'] != -1){
             $sql .= "sales.cBrand LIKE '%".$request['brands']."%' AND ";
@@ -392,7 +435,7 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, sk.name as skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
 
         if($request['brands'] != -1){
             $sql .= "sales.pBrand LIKE '%".$request['brands']."%' AND ";

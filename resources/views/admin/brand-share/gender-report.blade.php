@@ -237,6 +237,85 @@ Brand Share
 			</div>
 		</div>
 	</div>
+
+	<!-- Time Cluster report -->
+	<div class="row ">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						Cluster Survey Report
+					</h3>
+					<span class="pull-right">
+						<i class="glyphicon glyphicon-chevron-up showhide clickable" title="Hide Panel content"></i>
+						<i class="glyphicon glyphicon-remove removepanel clickable"></i>
+					</span>
+				</div>
+				<div class="form">
+					<form method="POST" action="{{ route('admin.genderWiseAjax') }}">
+						{{ csrf_field() }}
+						<input type="hidden" name="request_to" value="cluster_survey">
+						<input type="hidden" name="type" value="pie">
+						<div class="row">
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control brand_change" name="brand" target=".age_shop">
+										<!-- <option value="-1">Select Brand</option> -->
+										@if(isset($brands) && count($brands) > 0)
+										@foreach($brands as $brand)
+										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
+										@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
+
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control" name="cities">
+										<option value="-1">All Cities</option>
+										@if(isset($cities) && count($cities) > 0)
+										@foreach($cities as $city)
+										<option value="{{ $city->name }}">{{ $city->name }}</option>
+										@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
+							
+
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control age_shop" name="shops">
+										<option value="-1">All Shops</option>
+										@if(isset($shops) && count($shops) > 0)
+										@foreach($shops as $shop)
+										<option value="{{ $shop->id }}">{{ $shop->name }}</option>
+										@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<input type="date" class="form-control" name="report_from">
+								</div>
+							</div>
+							<div class="col-md-2 col-sm-4 col-xs-12">
+								<div class="form-group">
+									<input type="submit" class="btn btn-primary" name="submit" value="Filter">
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="panel-body text-center graph-body">
+					<h3>Cluster Sruvey Report</h3>
+					<div id="cluster_survey" style="min-width: 310px; height: 400px; max-width: 100%; margin: 0 auto"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 </section>
 
 @stop
@@ -275,6 +354,10 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 				if(target == 'age_wise'){
 					ageBarChart(res, target, type, title);
 				}
+				else if(target == 'cluster_survey'){
+					let title = `for date ${from}`;
+					timeCluster(res, target, type, title);
+				}
 				else{
 					createBarChart(res, target, type, title);
 				}
@@ -310,7 +393,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
                         text: 'Tasks'
                     },
                 }],
-            
+
             legend: {
                 layout: 'horizontal',
                 align: 'center',
@@ -324,7 +407,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
                     tooltip: {
                         valueSuffix: (type == 'ratio') ? '%' : ''
                     }
-                   
+
                 }, {
                     name: 'Female Interception',
                     color : "#FFFF33",
@@ -332,7 +415,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
                     tooltip: {
                         valueSuffix: (type == 'ratio') ? '%' : ''
                     }
-                    
+
                 },{
                     name: 'Male Sale',
                      color: "#FFA500",
@@ -340,7 +423,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
                     tooltip: {
                         valueSuffix: (type == 'ratio') ? '%' : ''
                     }
-                    
+
                 }, {
                     name: 'Female Sale',
                      color : "#008000",
@@ -355,7 +438,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
                     tooltip: {
                         valueSuffix: (type == 'ratio') ? '%' : ''
                     }
-                    
+
                 }, {
                     name: 'Female productivity',
                      color : "#FF0000",
@@ -363,7 +446,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
                     tooltip: {
                         valueSuffix: (type == 'ratio') ? '%' : ''
                     }
-                    
+
                 }]
         });
 	}
@@ -393,7 +476,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
                         text: 'Tasks'
                     },
                 }],
-            
+
             legend: {
                 layout: 'horizontal',
                 align: 'center',
@@ -432,7 +515,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 							valueSuffix: (type == 'ratio') ? '%' : ''
 						}
 					},
-					{                
+					{
 						name: '35 - 40',
 						color: "#A9A9A9",
 						data: [data['35-40']],
@@ -458,6 +541,56 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 					}
 				]
         });
+	}
+
+	function timeCluster(data, target, type, title){
+
+		Highcharts.chart(target, {
+
+			title: {
+			text: '',
+			x: -20
+			},
+
+			/* subtitle: {
+			text: subtitle,
+			x: -20
+			}, */
+
+			yAxis: {
+				title: {
+					text: title
+				},
+				plotLines: [{
+					value: 0,
+					width: 1,
+					color: '#808080'
+				}]
+			},
+			xAxis: {
+				categories: data[1],
+				tickInterval: 3
+			},
+			tooltip: {
+				valueSuffix: ''
+			},
+			legend: {
+				layout: 'vertical',
+				align: 'right',
+				verticalAlign: 'middle',
+				borderWidth: 0
+			},
+			series: [{
+				name: 'Sale',
+				data: data[2]
+				},{
+				name: 'Average',
+				data: data[0],
+				color: 'red',
+				marker: {enabled: false}
+			}]
+
+		});
 	}
 
 	$(".brand_change").on("change", function(){
