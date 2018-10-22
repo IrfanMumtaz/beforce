@@ -395,9 +395,9 @@ class ReportController extends Controller
         $data['employees'] = Employee::where('Designation', 7)->get();
 
 
-        $data['interception'] = $this->interceptionReq($request->only($request->report_from, $request->report_to, $request->brands, $request->cities, $request->shops, $request->employees));
-        $data['competitor'] = $this->competitor($request->only($request->report_from, $request->report_to, $request->brands, $request->cities, $request->shops, $request->employees));
-        $data['noSale'] = $this->noSale($request->only($request->report_from, $request->report_to, $request->brands, $request->cities, $request->shops, $request->employees));
+        $data['interception'] = $this->interceptionReq($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees'));
+        $data['competitor'] = $this->competitor($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees'));
+        $data['noSale'] = $this->noSale($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees'));
 
         return view('admin.brand-share.interception')->with($data);
     }

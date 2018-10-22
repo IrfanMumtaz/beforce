@@ -260,7 +260,7 @@ Brand Share
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control brand_change" name="brand" target=".age_shop">
-										<!-- <option value="-1">Select Brand</option> -->
+										<option value="-1">All Brand</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
 										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
