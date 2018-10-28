@@ -66,11 +66,23 @@ Out Of Stock Report
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_change city_change emp_change" name="brands" target=".brand_shop" city-target=".brand-city" bae-target=".bae-brands">
+									<select class="form-control brand_change city_change emp_change cat_change" name="brands" target=".brand_shop" city-target=".brand-city" bae-target=".bae-brands" cat-target=".brand-cat">
 										<option value="-1">All Brands</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
-										<option value="{{ $brand->id }}">{{ $brand->BrandName }}</option>
+										<option value="{{ $brand->id }}"  {{ old('brands') }}>{{ $brand->BrandName }}</option>
+										@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control brand-cat" name="categories">
+										<option value="-1">All Categories</option>
+										@if(isset($categories) && count($categories) > 0)
+										@foreach($categories as $c)
+										<option value="{{ $c->id }}">{{ $c->Category }}</option>
 										@endforeach
 										@endif
 									</select>
@@ -132,6 +144,7 @@ Out Of Stock Report
 								<th>Shop</th>
 								<th>City</th>
 								<th>Date</th>
+								<th>Time</th>
 							</tr>
 						</thead>
 
@@ -146,6 +159,7 @@ Out Of Stock Report
 									<td>{{ $int->shop }}</td>
 									<td>{{ $int->city }}</td>
 									<td>{{ date('Y-m-d', strtotime($int->date)) }}</td>
+									<td>{{ date('H:i:s', strtotime($int->date)) }}</td>
 								</tr>
 
 							@endforeach
@@ -252,6 +266,26 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
         dom: 'Bfrtip',
         buttons: ['excel']
     });
+	$(".cat_change").on("change", function(){
+		let target = $(this).attr("cat-target");
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getCatByBrands') }}/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Categories</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		})
+	})
 
 </script>
 @stop

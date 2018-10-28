@@ -236,6 +236,7 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	Route::get('/get-shops-by-brands/{id?}', 'Admin\ReportController@getShopsByBrands')->name('getShopsByBrands');
 	Route::get('/get-city-by-brands/{id?}', 'Admin\ReportController@getCitiesByBrands')->name('getCitiesByBrands');
 	Route::get('/get-bas-by-brands/{id?}', 'Admin\ReportController@getBasByBrands')->name('getBasByBrands');
+	Route::get('/get-cat-by-brands/{id?}', 'Admin\ReportController@getCatByBrands')->name('getCatByBrands');
 });
 Route::get('clear', function () {
 	
