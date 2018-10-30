@@ -62,6 +62,7 @@ class ReportController extends Controller
         $brand->select('c.Category as name', DB::raw('count(o.id) as y'));
         $brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
         $brand->join('Orders as o', 'o.skuCategory', '=', 'c.id', 'inner');
+        $brand->join('shops as sh', 'sh.id', '=', 'o.storeId', 'inner');
         if($req['brand'] != -1){
             $brand->where('brands.id', $req['brand']);
         }
@@ -71,9 +72,9 @@ class ReportController extends Controller
         if($req['categories'] != -1){
             $brand->where('o.skuCategory', $req['categories']);
         }
-        /*if($req['shops'] != -1){
-            $brand->where('o.storeId', $req['shops']);
-        }*/
+        if($req['cities'] != -1){
+            $brand->where('sh.city_id', $req['cities']);
+        }
         $brand->where('c.Competition', $req['sale_type']);
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('o.skuCategory');
@@ -91,6 +92,7 @@ class ReportController extends Controller
         $brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
         $brand->join('skus as s', 's.category_id', '=', 'c.id', 'inner');
         $brand->join('Orders as o', 'o.SKU', '=', 's.id', 'inner');
+        $brand->join('shops as sh', 'sh.id', '=', 'o.storeId', 'inner');
         if($req['brand'] != -1){
             $brand->where('brands.id', $req['brand']);
         }
@@ -99,6 +101,9 @@ class ReportController extends Controller
         }
         if($req['categories'] != -1){
             $brand->where('o.skuCategory', $req['categories']);
+        }
+        if($req['cities'] != -1){
+            $brand->where('sh.city_id', $req['cities']);
         }
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('o.SKU');
@@ -112,11 +117,11 @@ class ReportController extends Controller
         $date[1] = $req['report_to'] ? $req['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
 
         $brand = Brands::query();
-        $brand->select('s.name as name', DB::raw('count(o.id) as y'));
+        $brand->select('sh.name as name', DB::raw('count(o.id) as y'));
         $brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
         $brand->join('Orders as o', 'o.skuCategory', '=', 'c.id', 'inner');
-        $brand->join('shops as s', 'o.storeId', '=', 's.id', 'inner');
-        
+        $brand->join('shops as sh', 'sh.id', '=', 'o.storeId', 'inner');  
+
         if($req['brand'] != -1){
             $brand->where('brands.id', $req['brand']);
         }
@@ -125,6 +130,9 @@ class ReportController extends Controller
         }
         if($req['categories'] != -1){
             $brand->where('o.skuCategory', $req['categories']);
+        }
+        if($req['cities'] != -1){
+            $brand->where('sh.city_id', $req['cities']);
         }
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('o.storeId');
@@ -143,6 +151,7 @@ class ReportController extends Controller
         $brand->join('skus as s', 's.category_id', '=', 'c.id', 'inner');
         $brand->join('skutargets as t', 's.id', '=', 't.sku_id', 'inner');
         $brand->join('Orders as o', 'o.SKU', '=', 's.id', 'left');
+        $brand->join('shops as sh', 'sh.id', '=', 'o.storeId', 'inner'); 
         
         if($req['brand'] != -1){
             $brand->where('brands.id', $req['brand']);
@@ -152,6 +161,9 @@ class ReportController extends Controller
         }
         if($req['categories'] != -1){
             $brand->where('o.skuCategory', $req['categories']);
+        }
+        if($req['cities'] != -1){
+            $brand->where('sh.city_id', $req['cities']);
         }
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('categories');
@@ -164,6 +176,7 @@ class ReportController extends Controller
         $data['brands'] = Brands::all();
         $data['shops'] = Stores::all();
         $data['cities'] = City::all();
+        $data['categories'] = Category::all();
         return view('admin.brand-share.gender-report')->with($data);
     }
     
@@ -182,7 +195,7 @@ class ReportController extends Controller
                 break;
             
             case 'cluster_survey':
-                $this->clusterSurvey($request->only('shops', 'brand', 'report_from', 'cities'));
+                $this->clusterSurvey($request->only('shops', 'brand', 'report_from', 'cities', 'categories'));
                 break;
 
             default:
@@ -359,20 +372,28 @@ class ReportController extends Controller
         
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_from'] ? $request['report_from']. " 23:59:59" : date('Y-m-d H:i:s');
+
         $categories = Brands::select('categories.id', 'categories.Category')->join('categories', 'categories.brand_id', '=', 'brands.id', 'inner')->where('brands.id', $request['brand'])->get();
+
         $sales = Sales::Query();
+        $sales->join("categories as c", "c.id", "=", DB::raw('(SELECT TRIM(BOTH \'"\' FROM cBrand) AS cBrands from sales)');
         $sales->whereBetween('created_at', $date);  
-        if($request['shops'] != -1){
+        /*if($request['shops'] != -1){
             $sales->where("Location", $request['shops']);
         }
         if($request['brand'] != -1){
-            $sales->where("cBrand", "LIKE",  "%".$request['brand']."%");
+            $sales->where("brands", "=",  $request['brand']);
+        }
+        if($request['categories'] != -1){
+            $sales->where("cBrand", "LIKE",  "%".$request['categories']."%");
         }
         if($request['cities'] != -1){
             $sales->where("City", "LIKE",  "%".$request['cities']."%");
-        }
+        }*/
         $sales->where("saleStatus", 1);
         $sales = $sales->get();
+
+        dd($sales);
         $sale = array();
         $categories = array();
         $saleGroup = array(
@@ -408,16 +429,17 @@ class ReportController extends Controller
         if(!$request->isMethod('post')){
             return redirect()->route('admin.interception');
         }
+        // dd($request->all());
 
         $data['brands'] = Brands::all();
         $data['cities'] = City::all();
+        $data['categories'] = Category::all();
         $data['shops'] = Stores::all();
         $data['employees'] = Employee::where('Designation', 7)->get();
 
-
-        $data['interception'] = $this->interceptionReq($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees'));
-        $data['competitor'] = $this->competitor($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees'));
-        $data['noSale'] = $this->noSale($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees'));
+        $data['interception'] = $this->interceptionReq($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees', 'categories'));
+        $data['competitor'] = $this->competitor($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees', 'categories'));
+        $data['noSale'] = $this->noSale($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees', 'categories'));
 
         return view('admin.brand-share.interception')->with($data);
     }
@@ -426,14 +448,18 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cBrand.BrandName as cName, pBrand.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE ";
 
         if($request['brands'] != -1){
-            $sql .= "sales.cBrand LIKE '%".$request['brands']."%' AND ";
+            $sql .= "cBrand.id =  '".$request['brands']."' AND ";
+        }
+
+        if($request['categories'] != -1){
+            $sql .= "sales.cBrand LIKE '%".$request['categories']."%' AND ";
         }
 
         if($request['cities'] != -1){
-            $sql .= "City LIKE '%".$request['cities']."%' AND ";
+            $sql .= "s.city_id = ".$request['cities']." AND ";
         }
 
         if($request['shops'] != -1){
@@ -445,7 +471,7 @@ class ReportController extends Controller
         }
         
         $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\"";
-        
+        // dd($sql);
         $sales = DB::select(DB::raw($sql));
         return $sales;
 
@@ -455,14 +481,18 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cBrand.BrandName as cName, pBrand.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
 
         if($request['brands'] != -1){
-            $sql .= "sales.pBrand LIKE '%".$request['brands']."%' AND ";
+            $sql .= "cBrand.id =  '".$request['brands']."' AND ";
+        }
+
+        if($request['categories'] != -1){
+            $sql .= "sales.cBrand LIKE '%".$request['categories']."%' AND ";
         }
 
         if($request['cities'] != -1){
-            $sql .= "City LIKE '%".$request['cities']."%' AND ";
+            $sql .= "s.city_id = ".$request['cities']." AND ";
         }
 
         if($request['shops'] != -1){
@@ -485,14 +515,18 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.BrandName as cName, pSale.BrandName as pName FROM sales LEFT JOIN brands AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN brands AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cBrand.BrandName as cName, pBrand.BrandName as pName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
 
         if($request['brands'] != -1){
-            $sql .= "sales.cBrand LIKE '%".$request['brands']."%' AND ";
+            $sql .= "cBrand.id =  '".$request['brands']."' AND ";
+        }
+
+        if($request['categories'] != -1){
+            $sql .= "sales.cBrand LIKE '%".$request['categories']."%' AND ";
         }
 
         if($request['cities'] != -1){
-            $sql .= "City LIKE '%".$request['cities']."%' AND ";
+            $sql .= "s.city_id = ".$request['cities']." AND ";
         }
 
         if($request['shops'] != -1){
@@ -589,6 +623,7 @@ class ReportController extends Controller
         $data['brands'] = Brands::all();
         $data['cities'] = City::all();
         $data['shops'] = Stores::all();
+        $data['categories'] = Category::all();
         $data['employees'] = Employee::where('Designation', 7)->get();
 
         $date[0] = $request->report_from ? $request->report_from. " 00:00:00" : date('Y-m-d H:i:s');
@@ -607,13 +642,13 @@ class ReportController extends Controller
             $stock->where('b.id', $request->brands);
         }
 
-        if($request->categoreis != -1){
+        if($request->categories != -1){
             
-            $stock->where('Orders.skuCategory', $request->categoreis);
+            $stock->where('Orders.skuCategory', $request->categories);
         }
         
         if($request->cities != -1){
-            $stock->where('emp.ShopCity', $request->cities);
+            $stock->where('s.city_id', $request->cities);
         }
         
         if($request->shops != -1){
@@ -624,6 +659,7 @@ class ReportController extends Controller
         
         $data['stock'] = $stock->get();
         // return redirect()->back()->with($data);
+
         return view('admin.brand-share.out-of-stock')->with($data);
     }
 
@@ -633,6 +669,19 @@ class ReportController extends Controller
         $shops->select('name', 'id');
         if($id != -1){
             $shops->where('brand_id', $id);
+        }
+        $shops = $shops->get();
+        echo json_encode($shops);
+    }
+
+    public function getShopByBrandsNCity($brand, $city){
+        $shops = Stores::query();
+        $shops->select('name', 'id');
+        if($brand != -1){
+            $shops->where('brand_id', $brand);
+        }
+        if($city != -1){
+            $shops->where('city_id', $city);
         }
         $shops = $shops->get();
         echo json_encode($shops);

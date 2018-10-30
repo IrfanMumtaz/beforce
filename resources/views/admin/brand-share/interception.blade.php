@@ -148,11 +148,11 @@ Interception Report
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 
-									<select class="form-control brand-city" name="cities">
+									<select class="form-control brand-city city_shop" name="cities" target=".city_shops">
 										<option value="-1">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $city)
-										<option value="{{ $city->name }}">{{ $city->name }}</option>
+										<option value="{{ $city->id }}">{{ $city->name }}</option>
 
 										@endforeach
 										@endif
@@ -162,7 +162,7 @@ Interception Report
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 
-									<select class="form-control brand_shop" name="shops">
+									<select class="form-control brand_shop city_shops" name="shops">
 										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
@@ -201,7 +201,7 @@ Interception Report
 								<th>#</th>
 								<th>Date</th>
 								<th>Store</th>
-								<th>BA</th>
+								<th>Employees</th>
 								<th>Name</th>
 								<th>Contact</th>
 								<th>Email</th>
@@ -227,7 +227,7 @@ Interception Report
 									<td>{{ str_replace('"', '', $int->email) }}</td>
 									<td>{{ $int->pName }}</td>
 									<td>{{ $int->cName }}</td>
-									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
+									<td>{{ ($int->pName == $int->cName) ? "existing" : "new" }}</td>
 									<td>{{ str_replace('"', '', $int->gender) }}</td>
 									<td>{{ $int->age }}</td>
 									<td><p class="article">{{ $int->skuName }}</p></td>
@@ -246,7 +246,7 @@ Interception Report
 								<th>#</th>
 								<th>Date</th>
 								<th>Store</th>
-								<th>BA</th>
+								<th>Employees</th>
 								<th>Name</th>
 								<th>Contact</th>
 								<th>Email</th>
@@ -272,7 +272,7 @@ Interception Report
 									<td>{{ str_replace('"', '', $int->email) }}</td>
 									<td>{{ $int->pName }}</td>
 									<td>{{ $int->cName }}</td>
-									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
+									<td>{{ ($int->pName == $int->cName) ? "existing" : "new" }}</td>
 									<td>{{ str_replace('"', '', $int->gender) }}</td>
 									<td>{{ $int->age }}</td>
 									<td><p class="article">{{ $int->skuName }}</p></td>
@@ -291,7 +291,7 @@ Interception Report
 								<th>#</th>
 								<th>Date</th>
 								<th>Store</th>
-								<th>BA</th>
+								<th>Employees</th>
 								<th>Name</th>
 								<th>Contact</th>
 								<th>Email</th>
@@ -316,7 +316,7 @@ Interception Report
 									<td>{{ str_replace('"', '', $int->email) }}</td>
 									<td>{{ $int->pName }}</td>
 									<td>{{ $int->cName }}</td>
-									<td>{{ ($int->pBrand == $int->cBrand) ? "existing" : "new" }}</td>
+									<td>{{ ($int->pName == $int->cName) ? "existing" : "new" }}</td>
 									<td>{{ str_replace('"', '', $int->gender) }}</td>
 									<td>{{ $int->age }}</td>
 								</tr>
@@ -407,7 +407,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 			url: "{{ route('admin.getBasByBrands') }}/"+$(this).val(),
 			success: function(res){
 				res = JSON.parse(res);
-				let html = `<option value="-1">All BAE</option>`;
+				let html = `<option value="-1">All Employees</option>`;
 
 				res.forEach((r) =>{
 					html += `<option value="${r.id}">${r.name}</option>`;
@@ -461,6 +461,31 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 				console.log(err);
 			}
 		})
+	});
+
+	
+
+	$(".city_shop").on("change", function(){
+		let target = $(this).attr("target");
+		let brand = $(this).parents('form').find('select[name=brands]').val();
+
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getShopByBrandsNCity') }}/"+brand+"/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Shops</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		});
 	});
 
 </script>

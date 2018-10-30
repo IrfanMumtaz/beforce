@@ -259,7 +259,7 @@ Brand Share
 						<div class="row">
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_change" name="brand" target=".age_shop">
+									<select class="form-control brand_change cat_change" name="brand" target=".age_shop" cat-target=".brand-cat">
 										<option value="-1">All Brand</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
@@ -269,7 +269,18 @@ Brand Share
 									</select>
 								</div>
 							</div>
-
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control brand-cat" name="categories">
+										<option value="-1">All Categories</option>
+										@if(isset($categories) && count($categories) > 0)
+										@foreach($categories as $c)
+										<option value="{{ $c->id }}">{{ $c->Category }}</option>
+										@endforeach
+										@endif
+									</select>
+								</div>
+							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control" name="cities">
@@ -282,8 +293,6 @@ Brand Share
 									</select>
 								</div>
 							</div>
-							
-
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control age_shop" name="shops">
@@ -601,6 +610,28 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 			success: function(res){
 				res = JSON.parse(res);
 				let html = `<option value="-1">All Shops</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		})
+	});
+	
+
+	$(".cat_change").on("change", function(){
+		let target = $(this).attr("cat-target");
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getCatByBrands') }}/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Categories</option>`;
 
 				res.forEach((r) =>{
 					html += `<option value="${r.id}">${r.name}</option>`;

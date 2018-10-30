@@ -85,7 +85,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-city" name="cities">
+									<select class="form-control brand-city city_shop" name="cities" target=".city_shops">
 										<option value="-1">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $c)
@@ -97,7 +97,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_shop" name="shops">
+									<select class="form-control brand_shop city_shops" name="shops">
 										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
@@ -180,7 +180,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-city" name="cities">
+									<select class="form-control brand-city city_shop" name="cities" target=".city_shops">
 										<option value="-1">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $c)
@@ -192,7 +192,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_shop" name="shops">
+									<select class="form-control brand_shop city_shops" name="shops">
 										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
@@ -274,7 +274,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-city" name="cities">
+									<select class="form-control brand-city city_shop" name="cities" target=".city_shops">
 										<option value="-1">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $c)
@@ -286,7 +286,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_shop" name="shops">
+									<select class="form-control brand_shop city_shops" name="shops">
 										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
@@ -367,7 +367,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-city" name="cities">
+									<select class="form-control brand-city city_shop" name="cities" target=".city_shops">
 										<option value="-1">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $c)
@@ -379,7 +379,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_shop" name="shops">
+									<select class="form-control brand_shop city_shops" name="shops">
 										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
@@ -649,6 +649,29 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 				console.log(err);
 			}
 		})
+	});
+
+	$(".city_shop").on("change", function(){
+		let target = $(this).attr("target");
+		let brand = $(this).parents('form').find('select[name=brand]').val();
+
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getShopByBrandsNCity') }}/"+brand+"/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Shops</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		});
 	});
 
 	
