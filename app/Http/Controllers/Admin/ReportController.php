@@ -368,7 +368,7 @@ class ReportController extends Controller
         echo json_encode($ageGroup);
     }
 
-    /*private function clusterSurvey($request){
+    private function clusterSurvey($request){
         
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_from'] ? $request['report_from']. " 23:59:59" : date('Y-m-d H:i:s');
@@ -376,24 +376,26 @@ class ReportController extends Controller
         $categories = Brands::select('categories.id', 'categories.Category')->join('categories', 'categories.brand_id', '=', 'brands.id', 'inner')->where('brands.id', $request['brand'])->get();
 
         $sales = Sales::Query();
-        $sales->join("categories as c", "c.id", "=", DB::raw('(SELECT TRIM(BOTH \'"\' FROM cBrand) AS cBrands from sales)');
-        $sales->whereBetween('created_at', $date);  
+        $sales->select("sales.created_at");
+        $sales->join("categories as c", "c.id", "=", DB::raw("(SELECT TRIM(BOTH '\"' FROM sales.cBrand) AS cBrands)"), "inner");
+        $sales->join("cities as ci", "ci.name", "LIKE", DB::raw("(SELECT TRIM(BOTH '\"' FROM sales.City) AS citiyName)"), "inner");
+        $sales->whereBetween('sales.created_at', $date);  
         if($request['shops'] != -1){
             $sales->where("Location", $request['shops']);
         }
         if($request['brand'] != -1){
-            $sales->where("brands", "=",  $request['brand']);
+            $sales->where("c.brand_id", "=",  $request['brand']);
         }
         if($request['categories'] != -1){
             $sales->where("cBrand", "LIKE",  "%".$request['categories']."%");
         }
         if($request['cities'] != -1){
-            $sales->where("City", "LIKE",  "%".$request['cities']."%");
+            $sales->where("ci.id", "=",  $request['cities']);
         }
         $sales->where("saleStatus", 1);
         $sales = $sales->get();
 
-        dd($sales);
+        // dd($sales);
         $sale = array();
         $categories = array();
         $saleGroup = array(
@@ -411,8 +413,11 @@ class ReportController extends Controller
             $sale[] =$v;
         }
         $average = array_sum($saleGroup) / 24;
-        echo json_encode([$average,$categories, $sale]);
-    }*/
+        for($i = 0; $i <24; $i++){
+            $avgArr[] = $average;
+        }
+        echo json_encode([$avgArr,$categories, $sale]);
+    }
 
     public function interception(){
         $data['brands'] = Brands::all();
@@ -436,6 +441,7 @@ class ReportController extends Controller
         $data['categories'] = Category::all();
         $data['shops'] = Stores::all();
         $data['employees'] = Employee::where('Designation', 7)->get();
+        $data['request'] = $request->all();
 
         $data['interception'] = $this->interceptionReq($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees', 'categories'));
         $data['competitor'] = $this->competitor($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees', 'categories'));
@@ -448,7 +454,7 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cBrand.BrandName as cName, pBrand.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE ";
 
         if($request['brands'] != -1){
             $sql .= "cBrand.id =  '".$request['brands']."' AND ";
@@ -481,7 +487,7 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, s.name as  name, sales.created_at as date , cBrand.BrandName as cName, pBrand.BrandName as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
+        $sql = "SELECT *, s.name as  name, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
 
         if($request['brands'] != -1){
             $sql .= "cBrand.id =  '".$request['brands']."' AND ";
@@ -515,7 +521,7 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cBrand.BrandName as cName, pBrand.BrandName as pName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.Category as cName, pSale.Category as pName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location WHERE ";
 
         if($request['brands'] != -1){
             $sql .= "cBrand.id =  '".$request['brands']."' AND ";
@@ -580,10 +586,11 @@ class ReportController extends Controller
         $break->select('emp.*', "b.*", "emp_break.*", "emp_break.created_at as create_date");
         $break->join("employees as emp", "emp.id", "=", 'emp_break.emp_id', 'inner');
         $break->join("break as b", "b.id", "=", 'emp_break.break_id', 'inner');
+        $break->join("categories as c", "c.brand_id", "=", 'emp.SelectBrand', 'inner');
         $break->whereBetween('emp_break.created_at', $date);
 
         if($request->employees != -1){
-            $break->where('emp_break', $request->employees);
+            $break->where('emp.id', $request->employees);
         }
 
         if($request->brands != -1){
@@ -595,7 +602,7 @@ class ReportController extends Controller
         }
 
         if($request->categories != -1){
-            $break->where('emp.ShopCity', $request->categories);
+            $break->where('c.id', $request->categories);
         }
 
         if($request->shops != -1){
@@ -603,6 +610,7 @@ class ReportController extends Controller
         }
 
         $data['breaks'] = $break->get();
+        $data['request'] = $request->all();
         // return redirect()->back()->with($data);
         return view('admin.brand-share.break')->with($data);
     }
@@ -624,6 +632,7 @@ class ReportController extends Controller
         $data['cities'] = City::all();
         $data['shops'] = Stores::all();
         $data['categories'] = Category::all();
+        $data['request'] = $request->all();
         $data['employees'] = Employee::where('Designation', 7)->get();
 
         $date[0] = $request->report_from ? $request->report_from. " 00:00:00" : date('Y-m-d H:i:s');
