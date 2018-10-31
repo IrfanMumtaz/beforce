@@ -244,7 +244,7 @@ Brand Share
 			<div class="panel panel-primary">
 				<div class="panel-heading">
 					<h3 class="panel-title">
-						Cluster Survey Report
+						Time Cluster Report
 					</h3>
 					<span class="pull-right">
 						<i class="glyphicon glyphicon-chevron-up showhide clickable" title="Hide Panel content"></i>
@@ -319,7 +319,7 @@ Brand Share
 					</form>
 				</div>
 				<div class="panel-body text-center graph-body">
-					<h3>Cluster Sruvey Report</h3>
+					<h3>Time Cluster Report</h3>
 					<div id="cluster_survey" style="min-width: 310px; height: 400px; max-width: 100%; margin: 0 auto"></div>
 				</div>
 			</div>
