@@ -199,7 +199,7 @@ return [
         Sofa\Eloquence\BaseServiceProvider::class,
         Spatie\Analytics\AnalyticsServiceProvider::class,
         LaravelQRCode\Providers\QRCodeServiceProvider::class,
-        // Maatwebsite\Excel\ExcelServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
     ],
 
     /*
