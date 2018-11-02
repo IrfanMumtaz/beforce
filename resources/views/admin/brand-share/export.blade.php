@@ -51,19 +51,10 @@ Break Report
 					</span>
 				</div>
 				<div class="form">
-					<form method="POST" action="{{ route('admin.breakReport') }}">
+					<form method="POST" action="{{ route('admin.export-report') }}">
 						{{ csrf_field() }}
 						<div class="row">
-							<div class="col-md-3 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<input type="date" class="form-control" name="report_from">
-								</div>
-							</div>
-							<div class="col-md-3 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<input type="date" class="form-control" name="report_to">
-								</div>
-							</div>
+							
 							<!-- <div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control brand_change city_change emp_change cat_change" name="brands" target=".brand_shop" city-target=".brand-city" bae-target=".bae-brands" cat-target=".brand-cat">
@@ -115,6 +106,18 @@ Break Report
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<select class="form-control bae-brands" name="employees">
+										<option value="-1">Select Report</option>
+										<option value="overall-task">Overall Task Report</option>
+										<option value="individual-task">Individual Task Report</option>
+										<option value="overall-travelling">Overall Travelling Report</option>
+										<option value="individual-travelling">Individual Travelling Report</option>
+										<option value="attendance">Individual Attendance Report</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<select class="form-control bae-brands" name="employees">
 										<option value="-1">All Employees</option>
 										@if(isset($employees) && count($employees) > 0)
 										@foreach($employees as $emp)
@@ -122,6 +125,16 @@ Break Report
 										@endforeach
 										@endif
 									</select>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<input type="date" class="form-control" name="report_from">
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<input type="date" class="form-control" name="report_to">
 								</div>
 							</div>
 							<div class="col-md-2 col-sm-4 col-xs-12">
@@ -132,7 +145,7 @@ Break Report
 						</div>
 					</form>
 				</div>
-				<div class="panel-body text-center graph-body">
+				<!-- <div class="panel-body text-center graph-body">
 					<h2>Break Report</h2>
 					<table class="table interception-report">
 						<thead>
@@ -165,9 +178,7 @@ Break Report
 						</tbody>
 
 					</table>
-
-
-				</div>
+				</div> -->
 			</div>
 		</div>
 	</div>

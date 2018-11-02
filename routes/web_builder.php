@@ -231,7 +231,7 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	Route::get('reports/out-of-stock', 'Admin\ReportController@outOfStock')->name('outOfStock');
 	Route::any('reports/out-of-stock-report', 'Admin\ReportController@outOfStockReport')->name('outOfStockReport');
 	Route::get('reports/export', 'Admin\ReportController@export')->name('export');
-	Route::get('reports/export-report', 'Admin\ReportController@export-report')->name('export-report');
+	Route::post('reports/export-report', 'Admin\ReportController@export-report')->name('export-report');
 
 
 
