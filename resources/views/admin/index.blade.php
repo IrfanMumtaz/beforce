@@ -15,8 +15,14 @@
     <meta name="_token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('assets/vendors/morrisjs/morris.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/pages/dashboard2.css') }}"/>
+    <!-- <style type="text/css">
+        .square_boxs .col-md-6{
+            width: 50%;
+            float: left;
+        }
+    </style> -->
 @stop
-
+ 
 {{-- Page content --}}
 @section('content')
 
@@ -39,6 +45,120 @@
                 <strong>Error:</strong> You Need to add Google Analytics file for full working of the page
             </div>
         @endif
+        <div class="row">
+            <div class="col-lg-3 col-md-3 col-sm-6 margin_10 animated fadeInLeftBig">
+                <!-- Trans label pie charts strats here-->
+                <div class="lightbluebg no-radius">
+                    <a href="{{ route('admin.interception') }}" style="color: #ffffff;" id="total_employees">
+                    <div class="panel-body squarebox square_boxs">
+                        <div class="col-xs-12 pull-left nopadmar">
+                            <div class="row">
+                                <div class="square_box col-xs-7 text-right">
+                                    <span>Total Interception</span>
+                                    <div class="number" id="myTargetElement1">0</div>
+                                </div>
+                                <i class="fa fa-users fa-4x pull-right"></i>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="stat-label">Last Week</small>
+                                    <h4 id="myTargetElement1.1">98000</h4>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <small class="stat-label">Last Month</small>
+                                    <h4 id="myTargetElement1.2">396000</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 margin_10 animated fadeInLeftBig">
+                <!-- Trans label pie charts strats here-->
+                <div class="redbg no-radius">
+                    <a href="javascript:void(0)" style="color: #ffffff;" id="total_employees">
+                    <div class="panel-body squarebox square_boxs">
+                        <div class="col-xs-12 pull-left nopadmar">
+                            <div class="row">
+                                <div class="square_box col-xs-7 text-right">
+                                    <span>New Customer</span>
+                                    <div class="number" id="myTargetElement1">0</div>
+                                </div>
+                                <i class="fa fa-users fa-4x pull-right"></i>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="stat-label">Last Week</small>
+                                    <h4 id="myTargetElement1.1">98000</h4>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <small class="stat-label">Last Month</small>
+                                    <h4 id="myTargetElement1.2">396000</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 margin_10 animated fadeInLeftBig">
+                <!-- Trans label pie charts strats here-->
+                <div class="goldbg no-radius">
+                    <a href="javascript:void(0)" style="color: #ffffff;" id="total_employees">
+                    <div class="panel-body squarebox square_boxs">
+                        <div class="col-xs-12 pull-left nopadmar">
+                            <div class="row">
+                                <div class="square_box col-xs-7 text-right">
+                                    <span>Existing Customer </span>
+                                    <div class="number" id="myTargetElement1">0</div>
+                                </div>
+                                <i class="fa fa-users fa-4x pull-right"></i>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="stat-label">Last Week</small>
+                                    <h4 id="myTargetElement1.1">98000</h4>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <small class="stat-label">Last Month</small>
+                                    <h4 id="myTargetElement1.2">396000</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 margin_10 animated fadeInLeftBig">
+                <!-- Trans label pie charts strats here-->
+                <div class="palebluecolorbg no-radius">
+                    <a href="javascript:void(0)" style="color: #ffffff;" id="total_employees">
+                    <div class="panel-body squarebox square_boxs">
+                        <div class="col-xs-12 pull-left nopadmar">
+                            <div class="row">
+                                <div class="square_box col-xs-7 text-right">
+                                    <span>Total No of Sale</span>
+                                    <div class="number" id="myTargetElement1">0</div>
+                                </div>
+                                <i class="fa fa-money fa-4x pull-right"></i>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="stat-label">Last Week</small>
+                                    <h4 id="myTargetElement1.1">98000</h4>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <small class="stat-label">Last Month</small>
+                                    <h4 id="myTargetElement1.2">396000</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </a>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-lg-3 col-md-6 col-sm-6 margin_10 animated fadeInLeftBig">
                 <!-- Trans label pie charts strats here-->

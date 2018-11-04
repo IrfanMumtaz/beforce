@@ -160,6 +160,10 @@
   	<a href="{!! route('admin.outOfStock') !!}">
      	<i class="fa fa-angle-double-right"></i>Out Of Stock Report</a>
 	</li>
+	<li class="{{ Request::is('admin/assets*') ? 'active' : '' }}">
+  	<a href="{!! route('admin.export') !!}">
+     	<i class="fa fa-angle-double-right"></i>Exports</a>
+	</li>
 	</ul>
 </li>
 

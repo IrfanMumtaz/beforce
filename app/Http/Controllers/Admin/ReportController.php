@@ -8,12 +8,15 @@ use App\Models\Brands;
 use App\Models\Categories;
 use App\Models\Stores;
 use App\Employee;
+use App\Attendance;
 use App\Order;
 use App\sales;
 use App\Breaks;
 use App\city as BrandCity;
 use App\Category;
+use App\Task;
 use App\city;
+use App\Sku;
 use DB;
 use Excel;
 
@@ -24,14 +27,16 @@ class ReportController extends Controller
     public function brandShare(){
         $data['brands'] = Brands::all();
         $data['shops'] = Stores::all();
-        $data['categories'] = Category::all();
+        $data['categories'] = Category::where("Competition", 0)->get();
         $data['cities'] = BrandCity::all();
+        $data['skus'] = Sku::all();
         $categories = new Categories();
         $data['saleType'] = $categories->categoryStatus();
         return view('admin.brand-share.index')->with($data);
     }
 
     public function brandShareAjax(Request $request){
+
         switch ($request->request_to) {
             case 'brand_share':
                     $this->brandShareFilter($request->only('sale_type', 'brand', 'shops', 'report_from', 'report_to', 'categories', 'cities'));
@@ -73,7 +78,7 @@ class ReportController extends Controller
         if($req['categories'] != -1){
             $brand->where('o.skuCategory', $req['categories']);
         }
-        if($req['cities'] != -1){
+        if( $req['cities'] != -1){
             $brand->where('sh.city_id', $req['cities']);
         }
         $brand->where('c.Competition', $req['sale_type']);
@@ -97,15 +102,16 @@ class ReportController extends Controller
         if($req['brand'] != -1){
             $brand->where('brands.id', $req['brand']);
         }
-        if($req['shops'] != -1){
-            $brand->where('o.storeId', $req['shops']);
+        if(!in_array(-1, $req['shops'])){
+            $brand->whereIn('o.storeId', $req['shops']);
         }
-        if($req['categories'] != -1){
-            $brand->where('o.skuCategory', $req['categories']);
+        if(!in_array(-1, $req['categories'])){
+            $brand->whereIn('o.skuCategory', $req['categories']);
         }
-        if($req['cities'] != -1){
-            $brand->where('sh.city_id', $req['cities']);
+        if(!in_array(-1, $req['cities'])){
+            $brand->whereIn('sh.city_id', $req['cities']);
         }
+        $brand->where('c.Competition', 0);
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('o.SKU');
         $result = $brand->get();
@@ -126,14 +132,14 @@ class ReportController extends Controller
         if($req['brand'] != -1){
             $brand->where('brands.id', $req['brand']);
         }
-        if($req['shops'] != -1){
-            $brand->where('o.storeId', $req['shops']);
+        if(!in_array(-1, $req['shops'])){
+            $brand->whereIn('o.storeId', $req['shops']);
         }
-        if($req['categories'] != -1){
-            $brand->where('o.skuCategory', $req['categories']);
+        if(!in_array(-1, $req['categories'])){
+            $brand->whereIn('o.skuCategory', $req['categories']);
         }
-        if($req['cities'] != -1){
-            $brand->where('sh.city_id', $req['cities']);
+        if(!in_array(-1, $req['cities'])){
+            $brand->whereIn('sh.city_id', $req['cities']);
         }
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('o.storeId');
@@ -369,7 +375,7 @@ class ReportController extends Controller
         echo json_encode($ageGroup);
     }
 
-    /*private function clusterSurvey($request){
+    private function clusterSurvey($request){
         
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_from'] ? $request['report_from']. " 23:59:59" : date('Y-m-d H:i:s');
@@ -377,24 +383,26 @@ class ReportController extends Controller
         $categories = Brands::select('categories.id', 'categories.Category')->join('categories', 'categories.brand_id', '=', 'brands.id', 'inner')->where('brands.id', $request['brand'])->get();
 
         $sales = Sales::Query();
-        $sales->join("categories as c", "c.id", "=", DB::raw('(SELECT TRIM(BOTH \'"\' FROM cBrand) AS cBrands from sales)');
-        $sales->whereBetween('created_at', $date);  
+        $sales->select("sales.created_at");
+        $sales->join("categories as c", "c.id", "=", DB::raw("(SELECT TRIM(BOTH '\"' FROM sales.cBrand) AS cBrands)"), "inner");
+        $sales->join("cities as ci", "ci.name", "LIKE", DB::raw("(SELECT TRIM(BOTH '\"' FROM sales.City) AS citiyName)"), "inner");
+        $sales->whereBetween('sales.created_at', $date);  
         if($request['shops'] != -1){
             $sales->where("Location", $request['shops']);
         }
         if($request['brand'] != -1){
-            $sales->where("brands", "=",  $request['brand']);
+            $sales->where("c.brand_id", "=",  $request['brand']);
         }
         if($request['categories'] != -1){
             $sales->where("cBrand", "LIKE",  "%".$request['categories']."%");
         }
         if($request['cities'] != -1){
-            $sales->where("City", "LIKE",  "%".$request['cities']."%");
+            $sales->where("ci.id", "=",  $request['cities']);
         }
         $sales->where("saleStatus", 1);
         $sales = $sales->get();
 
-        dd($sales);
+        // dd($sales);
         $sale = array();
         $categories = array();
         $saleGroup = array(
@@ -412,8 +420,11 @@ class ReportController extends Controller
             $sale[] =$v;
         }
         $average = array_sum($saleGroup) / 24;
-        echo json_encode([$average,$categories, $sale]);
-    }*/
+        for($i = 0; $i <24; $i++){
+            $avgArr[] = $average;
+        }
+        echo json_encode([$avgArr,$categories, $sale]);
+    }
 
     public function interception(){
         $data['brands'] = Brands::all();
@@ -437,6 +448,7 @@ class ReportController extends Controller
         $data['categories'] = Category::all();
         $data['shops'] = Stores::all();
         $data['employees'] = Employee::where('Designation', 7)->get();
+        $data['request'] = $request->all();
 
         $data['interception'] = $this->interceptionReq($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees', 'categories'));
         $data['competitor'] = $this->competitor($request->only('report_from', 'report_to', 'brands', 'cities', 'shops', 'employees', 'categories'));
@@ -449,7 +461,7 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE ";
+        $sql = "SELECT *, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales INNER JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') INNER JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE cSale.Competition = 0 AND sales.saleStatus = 1 AND ";
 
         if($request['brands'] != -1){
             $sql .= "cBrand.id =  '".$request['brands']."' AND ";
@@ -482,7 +494,7 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
-        $sql = "SELECT *, s.name as  name, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE ";
+        $sql = "SELECT *, s.name as  name, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE cSale.Competition = 1 AND ";
 
         if($request['brands'] != -1){
             $sql .= "cBrand.id =  '".$request['brands']."' AND ";
@@ -581,10 +593,11 @@ class ReportController extends Controller
         $break->select('emp.*', "b.*", "emp_break.*", "emp_break.created_at as create_date");
         $break->join("employees as emp", "emp.id", "=", 'emp_break.emp_id', 'inner');
         $break->join("break as b", "b.id", "=", 'emp_break.break_id', 'inner');
+        $break->join("categories as c", "c.brand_id", "=", 'emp.SelectBrand', 'inner');
         $break->whereBetween('emp_break.created_at', $date);
 
         if($request->employees != -1){
-            $break->where('emp_break', $request->employees);
+            $break->where('emp.id', $request->employees);
         }
 
         if($request->brands != -1){
@@ -596,7 +609,7 @@ class ReportController extends Controller
         }
 
         if($request->categories != -1){
-            $break->where('emp.ShopCity', $request->categories);
+            $break->where('c.id', $request->categories);
         }
 
         if($request->shops != -1){
@@ -604,6 +617,7 @@ class ReportController extends Controller
         }
 
         $data['breaks'] = $break->get();
+        $data['request'] = $request->all();
         // return redirect()->back()->with($data);
         return view('admin.brand-share.break')->with($data);
     }
@@ -625,6 +639,7 @@ class ReportController extends Controller
         $data['cities'] = City::all();
         $data['shops'] = Stores::all();
         $data['categories'] = Category::all();
+        $data['request'] = $request->all();
         $data['employees'] = Employee::where('Designation', 7)->get();
 
         $date[0] = $request->report_from ? $request->report_from. " 00:00:00" : date('Y-m-d H:i:s');
@@ -711,45 +726,235 @@ class ReportController extends Controller
         echo json_encode($employees);
     }
 
-    public function getCatByBrands($id){
+    public function getCatByBrands($id, $cat){
         $categories = Category::query();
         $categories->select('Category as name', 'id');
         // $cities->join('brand_cities as bc', 'bc.city_id', '=', 'cities.id', 'inner');
         if($id != -1){
             $categories->where('brand_id', $id);
         }
+        if($cat != "undefined"){
+            $categories = $categories->where("Competition", $cat);
+            
+        }
         $categories = $categories->get();
         echo json_encode($categories);
     }
 
     public function exportData(Request $request){
-        $payments = BrandCity::all();
 
-        // Initialize the array which will be passed into the Excel
-        // generator.
-        $paymentsArray = []; 
+        switch ($request->request_to) {
+            case 'overall-task':
+                $excel = $this->overAllTask($request->only('report_from', 'report_to'));
+                $excelArray[] = ['#', 'Date', 'Name', 'Brand', 'City', 'Time', 'Shop', 'Task', 'Status', 'Distance Covered', 'Start/End Meeting'];
+                foreach ($excel as $key => $ex) {
+                    $e[] = $ex->id;
+                    $e[] = $ex->date;
+                    $e[] = $ex->EmployeeName;
+                    $e[] = $ex->BrandName;
+                    $e[] = $ex->cityName;
+                    $e[] = $ex->startTime;
+                    $e[] = $ex->sName;
+                    $e[] = $ex->Tasktype;
+                    $e[] = ($ex->status == 1) ? "Complete" : "Pending";
+                    $e[] = "N/A";
+                    $e[] = $ex->startTime ."/". $ex->endTime;
+                    $excelArray[] = $e;
+                    unset($e);
+                }
+                break;
 
-        // Define the Excel spreadsheet headers
-        $paymentsArray[] = ['id', 'name','state_id','created_at'];
+            case 'individual-task':
+                $excel = $this->individualTask($request->only('employees', 'report_from', 'report_to'));
+                $excelArray[] = ['#', 'Date', 'Name', 'Brand', 'City', 'Time', 'Shop', 'Task', 'Status', 'Distance Covered', 'Start/End Meeting'];
+                foreach ($excel as $key => $ex) {
+                    $e[] = $ex->id;
+                    $e[] = $ex->date;
+                    $e[] = $ex->EmployeeName;
+                    $e[] = $ex->BrandName;
+                    $e[] = $ex->cityName;
+                    $e[] = $ex->startTime;
+                    $e[] = $ex->sName;
+                    $e[] = $ex->Tasktype;
+                    $e[] = ($ex->status == 1) ? "Complete" : "Pending";
+                    $e[] = "N/A";
+                    $e[] = $ex->startTime ."/". $ex->endTime;
+                    $excelArray[] = $e;
+                    unset($e);
+                }
+                break;
 
-        // Convert each member of the returned collection into an array,
-        // and append it to the payments array.
-        foreach ($payments as $payment) {
-            $paymentsArray[] = $payment->toArray();
+            case 'attendance':
+                $excel = $this->attendanceReport($request->only('employees', 'report_from', 'report_to'));
+                // dd($attendance);
+                $excelArray[] = ['Date', 'Name', 'Store', 'City', 'Attendance', 'Start Time', 'Attendance End Time'];
+                foreach ($excel as $key => $ex) {
+                    $excelArray[] = $ex->toArray();
+                }   
+                break;
+
+            case 'successfull':
+                $excel = $this->interceptionReq($request->only('brands', 'categories', 'cities', 'shops', 'employees', 'report_from', 'report_to'));
+                // dd($excel[0]->skuName);
+
+                $excelArray[] = ['#', 'Date', 'Store', 'Exployees', 'Name', 'Contact', 'Email', 'Previous Brand', 'Current Brand', "customer Type", 'Gender', 'Age', 'SKUs'];
+                foreach ($excel as $key => $ex) {
+                    $e[] = ++$key;
+                    $e[] = date('Y-m-d', strtotime($ex->date));
+                    $e[] = $ex->name;
+                    $e[] = str_replace('"', '', $ex->empName);
+                    $e[] = str_replace('"', '', $ex->cusName);
+                    $e[] = str_replace('"', '', $ex->Contact);
+                    $e[] = str_replace('"', '', $ex->email) ;
+                    $e[] = $ex->pName;
+                    $e[] = $ex->cName;
+                    $e[] = ($ex->pName == $ex->cName) ? "existing" : "new";
+                    $e[] = str_replace('"', '', $ex->gender);
+                    $e[] = $ex->age;
+                    // $e[] = $ex->skuName;
+                    
+                    if($ex->skuName){
+
+                        $skus = explode(",",$ex->skuName);
+                        foreach ($skus as $k => $v) {
+                            $e[] = $v;
+                        }
+                    }
+
+
+                    $excelArray[] = $e;
+                    unset($e);
+                }
+                break;
+
+            case 'competitor':
+                $excel = $this->competitor($request->only('brands', 'categories', 'cities', 'shops', 'employees', 'report_from', 'report_to'));
+                // dd($excel[0]->skuName);
+
+                $excelArray[] = ['#', 'Date', 'Store', 'Exployees', 'Name', 'Contact', 'Email', 'Previous Brand', 'Current Brand', "customer Type", 'Gender', 'Age', 'SKUs'];
+                foreach ($excel as $key => $ex) {
+                    $e[] = ++$key;
+                    $e[] = date('Y-m-d', strtotime($ex->date));
+                    $e[] = $ex->name;
+                    $e[] = str_replace('"', '', $ex->empName);
+                    $e[] = str_replace('"', '', $ex->cusName);
+                    $e[] = str_replace('"', '', $ex->Contact);
+                    $e[] = str_replace('"', '', $ex->email) ;
+                    $e[] = $ex->pName;
+                    $e[] = $ex->cName;
+                    $e[] = ($ex->pName == $ex->cName) ? "existing" : "new";
+                    $e[] = str_replace('"', '', $ex->gender);
+                    $e[] = $ex->age;
+                    // $e[] = $ex->skuName;
+                    
+                    if($ex->skuName){
+
+                        $skus = explode(",",$ex->skuName);
+                        foreach ($skus as $k => $v) {
+                            $e[] = $v;
+                        }
+                    }
+
+
+                    $excelArray[] = $e;
+                    unset($e);
+                }
+                break;
+
+            case 'noSale':
+                $excel = $this->noSale($request->only('brands', 'categories', 'cities', 'shops', 'employees', 'report_from', 'report_to'));
+                // dd($excel[0]->skuName);
+
+                $excelArray[] = ['#', 'Date', 'Store', 'Exployees', 'Name', 'Contact', 'Email', 'Previous Brand', 'Current Brand', "customer Type", 'Gender', 'Age'];
+                foreach ($excel as $key => $ex) {
+                    $e[] = ++$key;
+                    $e[] = date('Y-m-d', strtotime($ex->date));
+                    $e[] = $ex->name;
+                    $e[] = str_replace('"', '', $ex->empName);
+                    $e[] = str_replace('"', '', $ex->cusName);
+                    $e[] = str_replace('"', '', $ex->Contact);
+                    $e[] = str_replace('"', '', $ex->email) ;
+                    $e[] = $ex->pName;
+                    $e[] = $ex->cName;
+                    $e[] = ($ex->pName == $ex->cName) ? "existing" : "new";
+                    $e[] = str_replace('"', '', $ex->gender);
+                    $e[] = $ex->age;
+
+                    $excelArray[] = $e;
+                    unset($e);
+                }
+                break;
+
+            default:
+                # code...
+                break;
         }
 
-        // Generate and return the spreadsheet
-        return Excel::create('laravelcode', function($excel) use ($paymentsArray) {
-            $excel->sheet('mySheet', function($sheet) use ($paymentsArray)
+
+        return Excel::create($request->request_to, function($excel) use ($excelArray) {
+            $excel->sheet('sheet 1', function($sheet) use ($excelArray)
             {
-                $sheet->fromArray($paymentsArray);
+                $sheet->fromArray($excelArray);
             });
         })->download('xlsx');
     }
 
     public function export(){
-        $data['employees'] = Employee::where('Designation', 7)->get();
+        $data['brands'] = Brands::all();
+        $data['cities'] = City::all();
+        $data['categories'] = Category::all();
+        $data['shops'] = Stores::all();
+        $data['employees'] = Employee::all();
         return view("admin.brand-share.export")->with($data);
+    }
+
+    private function attendanceReport($request){
+        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
+        $attendance = Attendance::select(DB::raw("DATE(attendance.created_at) as date"), "emp.EmployeeName", "shops.name as shopName", "cities.name as cityName", DB::raw('(CASE WHEN attendance.status = 1 THEN "P" ELSE "A" END) AS status') ,"attendance.startTime", "attendance.endTime")
+                        ->join("employees as emp", "emp.id", "=", "attendance.empid", "inner")
+                        ->join("shops", "emp.Shop", "=", "shops.id", "inner")
+                        ->join("cities", "emp.ShopCity", "=", "cities.id", "inner")
+                        ->where("emp.id", $request['employees'])
+                        ->whereBetween("attendance.created_at", $date)->get();
+        return $attendance;
+    }
+
+    private function overAllTask($request){
+        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
+        $tasks = Task::select("tasks.id", DB::raw("DATE(tasks.created_at) as date"), "emp.EmployeeName", "brands.BrandName", "cities.name as cityName", "tsk.startTime", "shops.name as sName", "tasks.Tasktype", "tasks.status" ,"tsk.startTime", "tsk.endTime")
+                        ->join("task_shops as tsk", "tsk.task_id", "=", "tasks.id", "inner")
+                        // ->join("emp_tracking as emp_tr", "tsk.task_id", "=", "tasks.id", "inner")
+                        ->join("employees as emp", "emp.id", "=", "tasks.emp_id", "inner")
+                        ->join("shops", "emp.Shop", "=", "shops.id", "inner")
+                        ->join("cities", "emp.ShopCity", "=", "cities.id", "inner")
+                        ->join("brands", "brands.id", "=", "emp.SelectBrand", "inner")
+                        ->whereBetween("tasks.created_at", $date)->get();
+        return $tasks;
+    }
+
+    private function individualTask($request){
+        $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
+        $tasks = Task::select("tasks.id", DB::raw("DATE(tasks.created_at) as date"), "emp.EmployeeName", "brands.BrandName", "cities.name as cityName", "tsk.startTime", "shops.name as sName", "tasks.Tasktype", "tasks.status" ,"tsk.startTime", "tsk.endTime")
+                        ->join("task_shops as tsk", "tsk.task_id", "=", "tasks.id", "inner")
+                        // ->join("emp_tracking as emp_tr", "tsk.task_id", "=", "tasks.id", "inner")
+                        ->join("employees as emp", "emp.id", "=", "tasks.emp_id", "inner")
+                        ->join("shops", "emp.Shop", "=", "shops.id", "inner")
+                        ->join("cities", "emp.ShopCity", "=", "cities.id", "inner")
+                        ->join("brands", "brands.id", "=", "emp.SelectBrand", "inner")
+                        ->where("emp.id", $request['employees'])
+                        ->whereBetween("tasks.created_at", $date)->get();
+        return $tasks;
+    }
+
+    public function brandSizeReport(Request $request){
+        print_r($request->all());
+        exit("working");
     }
 
 

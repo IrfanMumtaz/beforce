@@ -231,15 +231,16 @@ Route::group(array('prefix' => 'admin/', 'middleware' => 'admin','as'=>'admin.')
 	Route::get('reports/out-of-stock', 'Admin\ReportController@outOfStock')->name('outOfStock');
 	Route::any('reports/out-of-stock-report', 'Admin\ReportController@outOfStockReport')->name('outOfStockReport');
 	Route::get('reports/export', 'Admin\ReportController@export')->name('export');
-	Route::post('reports/export-report', 'Admin\ReportController@export-report')->name('export-report');
+	Route::post('reports/export-report', 'Admin\ReportController@exportData')->name('export-report');
 
 
 
 	Route::get('/get-shops-by-brands/{id?}', 'Admin\ReportController@getShopsByBrands')->name('getShopsByBrands');
 	Route::get('/get-city-by-brands/{id?}', 'Admin\ReportController@getCitiesByBrands')->name('getCitiesByBrands');
 	Route::get('/get-bas-by-brands/{id?}', 'Admin\ReportController@getBasByBrands')->name('getBasByBrands');
-	Route::get('/get-cat-by-brands/{id?}', 'Admin\ReportController@getCatByBrands')->name('getCatByBrands');
+	Route::get('/get-cat-by-brands/{id?}/{cat?}', 'Admin\ReportController@getCatByBrands')->name('getCatByBrands');
 	Route::get('/get-shops-by-brands-n-city/{brand?}/{city?}', 'Admin\ReportController@getShopByBrandsNCity')->name('getShopByBrandsNCity');
+	Route::post('/brand-size-report', 'Admin\ReportController@brandSizeReport')->name('brandSizeReport');
 });
 Route::get('clear', function () {
 	

@@ -244,7 +244,7 @@ Brand Share
 			<div class="panel panel-primary">
 				<div class="panel-heading">
 					<h3 class="panel-title">
-						Cluster Survey Report
+						Time Cluster Report
 					</h3>
 					<span class="pull-right">
 						<i class="glyphicon glyphicon-chevron-up showhide clickable" title="Hide Panel content"></i>
@@ -259,7 +259,7 @@ Brand Share
 						<div class="row">
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_change cat_change" name="brand" target=".age_shop" cat-target=".brand-cat">
+									<select class="form-control brand_change cat_change city_change" name="brand" target=".age_shop" cat-target=".brand-cat" city-target=".brand-city">
 										<option value="-1">All Brand</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
@@ -283,7 +283,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control" name="cities">
+									<select class="form-control brand-city city_shop brand-city" name="cities" target=".city_shops">
 										<option value="-1">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $city)
@@ -295,7 +295,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control age_shop" name="shops">
+									<select class="form-control age_shop city_shops" name="shops">
 										<option value="-1">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $shop)
@@ -319,7 +319,7 @@ Brand Share
 					</form>
 				</div>
 				<div class="panel-body text-center graph-body">
-					<h3>Cluster Sruvey Report</h3>
+					<h3>Time Cluster Report</h3>
 					<div id="cluster_survey" style="min-width: 310px; height: 400px; max-width: 100%; margin: 0 auto"></div>
 				</div>
 			</div>
@@ -365,6 +365,7 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 				}
 				else if(target == 'cluster_survey'){
 					let title = `for date ${from}`;
+					console.log(res);
 					timeCluster(res, target, type, title);
 				}
 				else{
@@ -596,7 +597,6 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 				name: 'Average',
 				data: data[0],
 				color: 'red',
-				marker: {enabled: false}
 			}]
 
 		});
@@ -644,5 +644,50 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 			}
 		})
 	});
+
+	$(".city_shop").on("change", function(){
+		let target = $(this).attr("target");
+		let brand = $(this).parents('form').find('select[name=brand]').val();
+
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getShopByBrandsNCity') }}/"+brand+"/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Shops</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		});
+	});
+
+	$(".city_change").on("change", function(){
+		let target = $(this).attr("city-target");
+		$.ajax({
+			method: "GET",
+			url: "{{ route('admin.getCitiesByBrands') }}/"+$(this).val(),
+			success: function(res){
+				res = JSON.parse(res);
+				let html = `<option value="-1">All Cities</option>`;
+
+				res.forEach((r) =>{
+					html += `<option value="${r.id}">${r.name}</option>`;
+				});
+				console.log(target);
+				$(target).html(html);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		})
+	});
+
 </script>
 @stop
