@@ -498,7 +498,9 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
         $sql = "SELECT *, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales INNER JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') INNER JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id WHERE cSale.Competition = 0 AND sales.saleStatus = 1 AND ";
+
 
         if($request['brands'] != -1){
             $sql .= "cBrand.id =  '".$request['brands']."' AND ";
@@ -531,7 +533,9 @@ class ReportController extends Controller
 
         $date[0] = $request['report_from'] ? $request['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $request['report_to'] ? $request['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
         $sql = "SELECT *, s.name as  name, sales.created_at as date , cSale.Category as cName, pSale.Category as pName, (SELECT GROUP_CONCAT(sk.name) FROM Orders AS o INNER JOIN skus AS sk ON sk.id = o.SKU WHERE o.SalesId = sales.`id` GROUP BY o.salesId) AS skuName FROM sales LEFT JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') LEFT JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') INNER JOIN brands as cBrand ON cBrand.id = cSale.brand_id INNER JOIN brands as pBrand ON pBrand.id = cSale.brand_id LEFT JOIN shops as s ON s.id = sales.Location INNER JOIN Orders AS o ON o.salesId = sales.id INNER JOIN skus AS sk ON sk.id = o.SKU WHERE cSale.Competition = 1 AND ";
+
 
         if($request['brands'] != -1){
             $sql .= "cBrand.id =  '".$request['brands']."' AND ";

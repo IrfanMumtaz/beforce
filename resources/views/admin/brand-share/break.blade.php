@@ -309,7 +309,5 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 		});
 	});
 
-
-
 </script>
 @stop
