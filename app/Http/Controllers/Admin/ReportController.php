@@ -53,6 +53,10 @@ class ReportController extends Controller
             case 'target_sale':
                     $this->totalVsSale($request->only('brand', 'shops', 'report_from', 'report_to', 'categories', 'cities'));
                 break;
+
+            case 'brand_size':
+                $this->brandSize($request->only('brand', 'categories', 'skus', 'cities', 'shops', 'report_from', 'report_to'));
+                break;
             
             default:
                 # code...
@@ -84,6 +88,39 @@ class ReportController extends Controller
         $brand->where('c.Competition', $req['sale_type']);
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('o.skuCategory');
+        $result = $brand->get();
+
+        echo json_encode($result);
+    }
+
+    private function brandSize($req){
+        $date[0] = $req['report_from'] ? $req['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
+        $date[1] = $req['report_to'] ? $req['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
+
+        $brand = Brands::query();
+        $brand->select('sk.name as name', DB::raw('count(o.id) as y'));
+        $brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
+        $brand->join('skus as sk', 'sk.category_id', '=', 'c.id', 'inner');
+        $brand->join('Orders as o', 'o.SKU', '=', 'sk.id', 'inner');
+        $brand->join('shops as sh', 'sh.id', '=', 'o.storeId', 'inner');
+        if($req['brand'] != -1){
+            $brand->where('brands.id', $req['brand']);
+        }
+        if(!in_array(-1, $req['shops'])){
+            $brand->whereIn('o.storeId', $req['shops']);
+        }
+        if(!in_array(-1, $req['categories'])){
+            $brand->whereIn('o.skuCategory', $req['categories']);
+        }
+        if(!in_array(-1, $req['cities'])){
+            $brand->whereIn('sh.city_id', $req['cities']);
+        }
+        if(!in_array(-1, $req['skus'])){
+            $brand->whereIn('sk.id', $req['skus']);
+        }
+        $brand->where('c.Competition', 0);
+        $brand->whereBetween('o.created_at', $date);
+        $brand->groupBy('o.SKU');
         $result = $brand->get();
 
         echo json_encode($result);

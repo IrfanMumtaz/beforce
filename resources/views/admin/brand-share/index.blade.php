@@ -429,7 +429,7 @@ Brand Share
 			<div class="panel panel-primary">
 				<div class="panel-heading">
 					<h3 class="panel-title">
-						Brand SKU Share Report
+						Brand Size Report
 					</h3>
 					<span class="pull-right">
 						<i class="glyphicon glyphicon-chevron-up showhide clickable" title="Hide Panel content"></i>
@@ -437,11 +437,18 @@ Brand Share
 					</span>
 				</div>
 				<div class="form">
-					<form method="POST" action="{{ route('admin.brandShareAjax') }}">
+					<form method="POST" action="{{ route('admin.brandShareAjax') }}" id="skuSize">
 						{{ csrf_field() }}
-						<input type="hidden" name="request_to" value="brand_share">
+						<input type="hidden" name="request_to" value="brand_size">
 						<input type="hidden" name="type" value="pie">
 						<div class="row">
+							<div class="col-md-3 col-sm-6 col-xs-12" style="display: none">
+								<div class="form-group">
+									<select class="form-control" name="sale_type">
+										<option value="0">own</option>
+									</select>
+								</div>
+							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<input type="date" class="form-control" name="report_from">
@@ -467,7 +474,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-cat sku_change" name="categories[]" multiple="multiple" target="brand-sku">
+									<select class="form-control brand-cat sku_change catArr" name="categories[]" multiple="multiple" target="brand-sku">
 										<option value="-1" selected="true">All Products</option>
 										@if(isset($categories) && count($categories) > 0)
 										@foreach($categories as $c)
@@ -479,7 +486,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-sku" name="skus[]" multiple="multiple">
+									<select class="form-control brand-sku skuArr" name="skus[]" multiple="multiple">
 										<option value="-1" selected="true">All Sizes</option>
 										@if(isset($skus) && count($skus) > 0)
 										@foreach($skus as $s)
@@ -491,7 +498,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-city city_shop" name="cities[]" target=".city_shops" multiple="multiple">
+									<select class="form-control brand-city city_shop cityArr" name="cities[]" target=".city_shops" multiple="multiple">
 										<option value="-1" selected="true">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $c)
@@ -503,7 +510,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_shop city_shops" name="shops[]" multiple="multiple">
+									<select class="form-control brand_shop city_shops shopArr" name="shops[]" multiple="multiple">
 										<option value="-1" selected="true">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
@@ -524,7 +531,7 @@ Brand Share
 					</form>
 				</div>
 				<div class="panel-body text-center graph-body">
-					<h3>Brand SKU Share Report</h3>
+					<h3>Brand Size Report</h3>
 					<div id="brand_share" style="min-width: 310px; height: 400px; max-width: 100%; margin: 0 auto"></div>
 				</div>
 			</div>
@@ -793,13 +800,13 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 		});
 	});
 
-	$("select").on("change", function(){
+	$("#skuSize select").on("change", function(){
 		let target = $(this).attr("sku-target");
 		let brands = $(this).parents('form').find('select[name=brand]').val()
-		let cats = $(this).parents('form').find('select[name=categories]:checked').val();
-		let skus = $(this).parents('form').find('select[name=skus]:checked').val();
-		let cities = $(this).parents('form').find('select[name=cities]:checked').val();
-		let shops = $(this).parents('form').find('select[name=shops]:checked').val();
+		let cats = $(this).parents('form').find('catArr').val();
+		let skus = $(this).parents('form').find('skuArr').val();
+		let cities = $(this).parents('form').find('cityArr').val();
+		let shops = $(this).parents('form').find('shopArr').val();
 		console.log(cats)
 		$.ajax({
 			method: "POST",
