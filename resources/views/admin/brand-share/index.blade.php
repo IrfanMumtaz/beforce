@@ -440,7 +440,7 @@ Brand Share
 					<form method="POST" action="{{ route('admin.brandShareAjax') }}" id="skuSize">
 						{{ csrf_field() }}
 						<input type="hidden" name="request_to" value="brand_size">
-						<input type="hidden" name="type" value="pie">
+						<input type="hidden" name="type" value="donut">
 						<div class="row">
 							<div class="col-md-3 col-sm-6 col-xs-12" style="display: none">
 								<div class="form-group">
@@ -462,7 +462,7 @@ Brand Share
 							
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_change city_change cat_change shop_change sku_change" name="brand" target=".brand_shop" city-target=".brand-city" cat-target=".brand-cat" sku-target="brand-sku">
+									<select class="form-control Brands" name="brand">
 										<option value="-1">All Brands</option>
 										@if(isset($brands) && count($brands) > 0)
 										@foreach($brands as $brand)
@@ -474,7 +474,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-cat sku_change catArr" name="categories[]" multiple="multiple" target="brand-sku">
+									<select class="form-control Products brand-cat" name="categories[]" multiple="multiple">
 										<option value="-1" selected="true">All Products</option>
 										@if(isset($categories) && count($categories) > 0)
 										@foreach($categories as $c)
@@ -486,7 +486,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-sku skuArr" name="skus[]" multiple="multiple">
+									<select class="form-control Sizes brand-sku" name="skus[]" multiple="multiple">
 										<option value="-1" selected="true">All Sizes</option>
 										@if(isset($skus) && count($skus) > 0)
 										@foreach($skus as $s)
@@ -498,7 +498,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand-city city_shop cityArr" name="cities[]" target=".city_shops" multiple="multiple">
+									<select class="form-control Cities brand-city" name="cities[]" multiple="multiple">
 										<option value="-1" selected="true">All Cities</option>
 										@if(isset($cities) && count($cities) > 0)
 										@foreach($cities as $c)
@@ -510,7 +510,7 @@ Brand Share
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12">
 								<div class="form-group">
-									<select class="form-control brand_shop city_shops shopArr" name="shops[]" multiple="multiple">
+									<select class="form-control Shops brand_shop" name="shops[]" multiple="multiple">
 										<option value="-1" selected="true">All Shops</option>
 										@if(isset($shops) && count($shops) > 0)
 										@foreach($shops as $s)
@@ -532,7 +532,7 @@ Brand Share
 				</div>
 				<div class="panel-body text-center graph-body">
 					<h3>Brand Size Report</h3>
-					<div id="brand_share" style="min-width: 310px; height: 400px; max-width: 100%; margin: 0 auto"></div>
+					<div id="brand_size" style="min-width: 310px; height: 400px; max-width: 100%; margin: 0 auto"></div>
 				</div>
 			</div>
 		</div>
@@ -580,12 +580,48 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 				if(type == 'bar'){
 					createBarChart(res, target, type, title);
 				}
+				if(type == 'donut'){
+					createDonutChart(res, target, type, title);
+				}
 			},
 			error: function(err){
 				console.log(err);
 			}
 		});
 	});
+
+	function createDonutChart(data, target, type, _title){
+		Highcharts.chart(target, {
+		    chart: {
+		        type: 'pie',
+		        options3d: {
+		            enabled: true,
+		            alpha: 45
+		        }
+		    },
+		    title: {
+		        text: _title
+		    },
+		    plotOptions: {
+		        pie: {
+		            innerSize: 100,
+		            depth: 45,
+					cursor: 'pointer',
+		            dataLabels: {
+						enabled: true,
+						format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+						style: {
+							color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+						}
+					}
+		        }
+		    },
+		    series: [{
+		        name: 'Total Quantity',
+		        data
+		    }]
+		});
+	}
 
 
 	function createPieChart(data, target, type, _title){
@@ -802,25 +838,36 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 
 	$("#skuSize select").on("change", function(){
 		let target = $(this).attr("sku-target");
-		let brands = $(this).parents('form').find('select[name=brand]').val()
-		let cats = $(this).parents('form').find('catArr').val();
-		let skus = $(this).parents('form').find('skuArr').val();
-		let cities = $(this).parents('form').find('cityArr').val();
-		let shops = $(this).parents('form').find('shopArr').val();
-		console.log(cats)
+		let data = $(this).parents('form').serialize();
+		let selection = $(this);
+		console.log(data)
 		$.ajax({
 			method: "POST",
 			url: "{{ route('admin.brandSizeReport') }}",
-			data: {brands, cats, skus, cities, shops},
+			data: data,
 			success: function(res){
 				res = JSON.parse(res);
-				let html = `<option value="-1" selected="true">All Sizes</option>`;
 
-				res.forEach((r) =>{
-					html += `<option value="${r.id}">${r.name}</option>`;
-				});
-				console.log(target);
-				$(target).html(html);
+				if(selection.attr("name") == "brand"){
+					insertHTML("Products", res['categories']);
+					insertHTML("Sizes", res['skus']);
+					insertHTML("Cities", res['cities']);
+					insertHTML("Shops", res['shops']);
+				}
+				else if(selection.attr("name") == "categories[]"){
+					insertHTML("Sizes", res['skus']);
+					insertHTML("Cities", res['cities']);
+					insertHTML("Shops", res['shops']);
+				}
+				else if(selection.attr("name") == "skus[]"){
+					insertHTML("Cities", res['cities']);
+					insertHTML("Shops", res['shops']);
+				}
+				else if(selection.attr("name") == "cities[]"){
+					insertHTML("Shops", res['shops']);
+				}
+
+				
 			},
 			error: function(err){
 				console.log(err);
@@ -832,6 +879,17 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
 	$('.brand-city').select2();
 	$('.brand_shop').select2();
 	$('.brand-sku').select2();
+
+	function insertHTML(target, data){
+		let html = `<option value="-1" selected="true">All ${target}</option>`;
+
+		$.each(data, function( index, value ) {
+			html += `<option value="${value[0]}">${value[1]}</option>`;
+		  console.log( value );
+		});
+
+		$("."+target).html(html);
+	}
 
 	
 

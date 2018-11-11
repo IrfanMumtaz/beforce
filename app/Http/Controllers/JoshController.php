@@ -473,10 +473,81 @@ class JoshController extends Controller {
             ->responsive(true)
             ->groupByMonth( 2017, true);
 
+        $datee[0] = date('Y-m-d 00:00:00');
+        $datee[1] = date('Y-m-d 23:59:59');
+
+        $inter["interception"][] = $this->totalInterception($datee);
+        $inter["new"][] = $this->totalnewCustomer($datee);
+        $inter["existing"][] = $this->totalExistingCustomer($datee);
+        $inter["nosale"][] = $this->totalNoSale($datee);
+
+
+        $previous_week = strtotime("-1 week +1 day");
+
+        $start_week = strtotime("last monday midnight",$previous_week);
+        $end_week = strtotime("next sunday",$start_week);
+
+        $datee[0] = date("Y-m-d 00:00:00",$start_week);
+        $datee[1] = date("Y-m-d 23:59:59",$end_week);
+
+        // dd($datee);
+
+        $inter["interception"][] = $this->totalInterception($datee);
+        $inter["new"][] = $this->totalnewCustomer($datee);
+        $inter["existing"][] = $this->totalExistingCustomer($datee);
+        $inter["nosale"][] = $this->totalNoSale($datee);
+
+        $datee[0] = date("Y-n-j", strtotime("first day of previous month"));
+        $datee[1] = date("Y-n-j", strtotime("last day of previous month"));
+
+
+        $inter["interception"][] = $this->totalInterception($datee);
+        $inter["new"][] = $this->totalnewCustomer($datee);
+        $inter["existing"][] = $this->totalExistingCustomer($datee);
+        $inter["nosale"][] = $this->totalNoSale($datee);
+        // dd($inter);
+
         if(Sentinel::check())
-            return view('admin.index',[ 'analytics_error'=>$analytics_error,'chart_data'=>$chart_data, 'emp_count'=>$emp_count,'att_count'=>$present_emps,'task_count'=>$task_count,'blog_count'=>$blog_count,'user_count'=>$user_count,'users'=>$users,'db_chart'=>$db_chart,'geo'=>$geo,'user_roles'=>$user_roles,'blogs'=>$blogs,'visitors'=>$visitors,'pageVisits'=>$pageVisits,'line_chart'=>$line_chart,'month_visits'=>$month_visits,'year_visits'=>$year_visits] )->with('to',date('d/m/Y',strtotime($current_date)))->with('from',date('d/m/Y',strtotime($pdate)))->with('xaxis',$xaxis)->with('yaxis',$yaxis)->with('average',$average)->with('selected_attendance_from_date',$from)->with('selected_attendance_to_date',$to);
+            return view('admin.index',[ 'analytics_error'=>$analytics_error,'chart_data'=>$chart_data, 'emp_count'=>$emp_count,'att_count'=>$present_emps,'task_count'=>$task_count,'blog_count'=>$blog_count,'user_count'=>$user_count,'users'=>$users,'db_chart'=>$db_chart,'geo'=>$geo,'user_roles'=>$user_roles,'blogs'=>$blogs,'visitors'=>$visitors,'pageVisits'=>$pageVisits,'line_chart'=>$line_chart,'month_visits'=>$month_visits,'year_visits'=>$year_visits] )->with('to',date('d/m/Y',strtotime($current_date)))->with('from',date('d/m/Y',strtotime($pdate)))->with('xaxis',$xaxis)->with('yaxis',$yaxis)->with('average',$average)->with('selected_attendance_from_date',$from)->with('selected_attendance_to_date',$to)->with("inter", $inter);
         else
             return redirect('admin/signin')->with('error', 'You must be logged in!');
+    }
+
+    private function totalInterception($date){
+        
+
+        $sql = "SELECT * FROM sales INNER JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') WHERE cSale.Competition = 0 AND sales.saleStatus = 1 AND ";
+        
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\"";
+        $sales = DB::select(DB::raw($sql));
+        return count($sales);
+    }
+
+    private function totalNoSale($date){
+
+        $sql = "SELECT * from sales WHERE sales.saleStatus != 1 AND ";
+        
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\"";
+        $sales = DB::select(DB::raw($sql));
+        return count($sales);
+    }
+
+    private function totalnewCustomer($date){
+
+        $sql = "SELECT * FROM sales INNER JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') INNER JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') WHERE cSale.Competition = 0 AND sales.saleStatus = 1 AND pSale.id != cSale.id AND ";
+        
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\"";
+        $sales = DB::select(DB::raw($sql));
+        return count($sales);
+    }
+
+    private function totalExistingCustomer($date){
+
+        $sql = "SELECT * FROM sales INNER JOIN categories AS cSale ON sales.`cBrand` = CONCAT('\"',cSale.`id`,'\"') INNER JOIN categories AS pSale ON sales.`pBrand` = CONCAT('\"',pSale.`id`,'\"') WHERE cSale.Competition = 0 AND sales.saleStatus = 1 AND pSale.id = cSale.id AND ";
+        
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\"";
+        $sales = DB::select(DB::raw($sql));
+        return count($sales);
     }
 
 }

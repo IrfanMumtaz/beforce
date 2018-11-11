@@ -55,18 +55,18 @@
                             <div class="row">
                                 <div class="square_box col-xs-7 text-right">
                                     <span>Total Interception</span>
-                                    <div class="number" id="myTargetElement1">0</div>
+                                    <div class="number" id="" style="color:#fff;">{{ $inter['interception'][0] }}</div>
                                 </div>
                                 <i class="fa fa-users fa-4x pull-right"></i>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <small class="stat-label">Last Week</small>
-                                    <h4 id="myTargetElement1.1">98000</h4>
+                                    <h4 id="">{{ $inter['interception'][1] }}</h4>
                                 </div>
                                 <div class="col-md-6 text-right">
                                     <small class="stat-label">Last Month</small>
-                                    <h4 id="myTargetElement1.2">396000</h4>
+                                    <h4 id="">{{ $inter['interception'][2] }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -83,18 +83,18 @@
                             <div class="row">
                                 <div class="square_box col-xs-7 text-right">
                                     <span>New Customer</span>
-                                    <div class="number" id="myTargetElement1">0</div>
+                                    <div class="number" id="" style="color:#fff;">{{ $inter['new'][0] }}</div>
                                 </div>
                                 <i class="fa fa-users fa-4x pull-right"></i>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <small class="stat-label">Last Week</small>
-                                    <h4 id="myTargetElement1.1">98000</h4>
+                                    <h4 id="">{{ $inter['new'][1] }}</h4>
                                 </div>
                                 <div class="col-md-6 text-right">
                                     <small class="stat-label">Last Month</small>
-                                    <h4 id="myTargetElement1.2">396000</h4>
+                                    <h4 id="">{{ $inter['new'][2] }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -111,18 +111,18 @@
                             <div class="row">
                                 <div class="square_box col-xs-7 text-right">
                                     <span>Existing Customer </span>
-                                    <div class="number" id="myTargetElement1">0</div>
+                                    <div class="number" id="" style="color:#fff;">{{ $inter['existing'][0] }}</div>
                                 </div>
                                 <i class="fa fa-users fa-4x pull-right"></i>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <small class="stat-label">Last Week</small>
-                                    <h4 id="myTargetElement1.1">98000</h4>
+                                    <h4 id="1">{{ $inter['existing'][1] }}</h4>
                                 </div>
                                 <div class="col-md-6 text-right">
                                     <small class="stat-label">Last Month</small>
-                                    <h4 id="myTargetElement1.2">396000</h4>
+                                    <h4 id="">{{ $inter['existing'][2] }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -138,19 +138,19 @@
                         <div class="col-xs-12 pull-left nopadmar">
                             <div class="row">
                                 <div class="square_box col-xs-7 text-right">
-                                    <span>Total No of Sale</span>
-                                    <div class="number" id="myTargetElement1">0</div>
+                                    <span>Total No-Sales</span>
+                                    <div class="number" id="" style="color:#fff;">{{ $inter['nosale'][0] }}</div>
                                 </div>
                                 <i class="fa fa-money fa-4x pull-right"></i>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <small class="stat-label">Last Week</small>
-                                    <h4 id="myTargetElement1.1">98000</h4>
+                                    <h4 id="">{{ $inter['nosale'][1] }}</h4>
                                 </div>
                                 <div class="col-md-6 text-right">
                                     <small class="stat-label">Last Month</small>
-                                    <h4 id="myTargetElement1.2">396000</h4>
+                                    <h4 id="">{{ $inter['nosale'][2] }}</h4>
                                 </div>
                             </div>
                         </div>

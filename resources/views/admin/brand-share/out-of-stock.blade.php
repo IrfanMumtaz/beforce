@@ -268,9 +268,10 @@ src="http://maps.google.com/maps/api/js?key=AIzaSyADWjiTRjsycXf3Lo0ahdc7dDxcQb47
     });
 	$(".cat_change").on("change", function(){
 		let target = $(this).attr("cat-target");
+		let competition = 0;
 		$.ajax({
 			method: "GET",
-			url: "{{ route('admin.getCatByBrands') }}/"+$(this).val(),
+			url: "{{ route('admin.getCatByBrands') }}/"+$(this).val()+"/"+competition,
 			success: function(res){
 				res = JSON.parse(res);
 				let html = `<option value="-1">All Categories</option>`;

@@ -443,13 +443,13 @@ class ReportController extends Controller
         $sale = array();
         $categories = array();
         $saleGroup = array(
-                "00" => 0, "01" => 0, "02" => 0, "03" => 0, "04" => 0, "05" => 0, 
-                "06" => 0, "07" => 0, "08" => 0, "09" => 0, "10" => 0, "11" => 0, 
-                "12" => 0, "13" => 0, "14" => 0, "15" => 0, "16" => 0, "17" => 0, 
-                "18" => 0, "19" => 0, "20" => 0, "21" => 0, "22" => 0, "23" => 0);
+                "00:00" => 0, "01:00" => 0, "02:00" => 0, "03:00" => 0, "04:00" => 0, "05:00" => 0, 
+                "06:00" => 0, "07:00" => 0, "08:00" => 0, "09:00" => 0, "10:00" => 0, "11:00" => 0, 
+                "12:00" => 0, "13:00" => 0, "14:00" => 0, "15:00" => 0, "16:00" => 0, "17:00" => 0, 
+                "18:00" => 0, "19:00" => 0, "20:00" => 0, "21:00" => 0, "22:00" => 0, "23:00" => 0);
 
         foreach($sales as $s){
-            $hour = date("H", strtotime($s->created_at));
+            $hour = date("H:00", strtotime($s->created_at));
             $saleGroup[(string)$hour] += 1;   
         }
         foreach($saleGroup as $k => $v){
@@ -522,7 +522,7 @@ class ReportController extends Controller
             $sql .= "sales.empId = ".$request['employees']." AND ";
         }
         
-        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\"";
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\" GROUP BY sales.id";
         // dd($sql);
         $sales = DB::select(DB::raw($sql));
         return $sales;
@@ -557,7 +557,7 @@ class ReportController extends Controller
             $sql .= "sales.empId = ".$request['employees']." AND ";
         }
         
-        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\" AND sales.saleStatus = 1 AND sales.cBrand NOT IN (SELECT CONCAT('\"',id,'\"') from brands)";
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\" AND sales.saleStatus = 1 AND sales.cBrand NOT IN (SELECT CONCAT('\"',id,'\"') from brands) GROUP BY sales.id";
         
         $sales = DB::select(DB::raw($sql));
 
@@ -591,7 +591,7 @@ class ReportController extends Controller
             $sql .= "sales.empId = ".$request['employees']." AND ";
         }
         
-        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\" AND sales.saleStatus = 0";
+        $sql .= "sales.created_at BETWEEN \"$date[0]\" AND \"$date[1]\" AND sales.saleStatus = 0 GROUP BY sales.id";
         
         $sales = DB::select(DB::raw($sql));
         return $sales;
@@ -656,6 +656,7 @@ class ReportController extends Controller
         if($request->shops != -1){
             $break->where('emp.Shop', $request->shops);
         }
+        $break->groupBy('emp_break.id');
 
         $data['breaks'] = $break->get();
         $data['request'] = $request->all();
@@ -787,19 +788,20 @@ class ReportController extends Controller
         switch ($request->request_to) {
             case 'overall-task':
                 $excel = $this->overAllTask($request->only('report_from', 'report_to'));
-                $excelArray[] = ['#', 'Date', 'Name', 'Brand', 'City', 'Time', 'Shop', 'Task', 'Status', 'Distance Covered', 'Start/End Meeting'];
+                $excelArray[] = ['#', 'Date', 'Name', 'Brand', 'City', 'Time', 'Shop', 'Task', 'Status', 'Distance Covered', 'Start Meeting', 'End Meeting'];
                 foreach ($excel as $key => $ex) {
                     $e[] = $ex->id;
                     $e[] = $ex->date;
                     $e[] = $ex->EmployeeName;
                     $e[] = $ex->BrandName;
                     $e[] = $ex->cityName;
-                    $e[] = $ex->startTime;
+                    $e[] = str_replace('"', '', $ex->startTime);
                     $e[] = $ex->sName;
                     $e[] = $ex->Tasktype;
                     $e[] = ($ex->status == 1) ? "Complete" : "Pending";
                     $e[] = "N/A";
-                    $e[] = $ex->startTime ."/". $ex->endTime;
+                    $e[] = $ex->startTime;
+                    $e[] = $ex->endTime;
                     $excelArray[] = $e;
                     unset($e);
                 }
@@ -807,19 +809,20 @@ class ReportController extends Controller
 
             case 'individual-task':
                 $excel = $this->individualTask($request->only('employees', 'report_from', 'report_to'));
-                $excelArray[] = ['#', 'Date', 'Name', 'Brand', 'City', 'Time', 'Shop', 'Task', 'Status', 'Distance Covered', 'Start/End Meeting'];
+                $excelArray[] = ['#', 'Date', 'Name', 'Brand', 'City', 'Time', 'Shop', 'Task', 'Status', 'Distance Covered', 'Start Meeting', 'End Meeting'];
                 foreach ($excel as $key => $ex) {
                     $e[] = $ex->id;
                     $e[] = $ex->date;
                     $e[] = $ex->EmployeeName;
                     $e[] = $ex->BrandName;
                     $e[] = $ex->cityName;
-                    $e[] = $ex->startTime;
+                    $e[] = str_replace('"', '', $ex->startTime);
                     $e[] = $ex->sName;
                     $e[] = $ex->Tasktype;
                     $e[] = ($ex->status == 1) ? "Complete" : "Pending";
                     $e[] = "N/A";
-                    $e[] = $ex->startTime ."/". $ex->endTime;
+                    $e[] = $ex->startTime;
+                    $e[] = $ex->endTime;
                     $excelArray[] = $e;
                     unset($e);
                 }
@@ -830,8 +833,16 @@ class ReportController extends Controller
                 // dd($attendance);
                 $excelArray[] = ['Date', 'Name', 'Store', 'City', 'Attendance', 'Start Time', 'Attendance End Time'];
                 foreach ($excel as $key => $ex) {
-                    $excelArray[] = $ex->toArray();
-                }   
+                    $e[] = $ex->date;
+                    $e[] = $ex->EmployeeName;
+                    $e[] = $ex->shopName;
+                    $e[] = $ex->cityName;
+                    $e[] = $ex->status;
+                    $e[] = str_replace('"', '', $ex->startTime);
+                    $e[] = str_replace('"', '', $ex->endTime);
+                    $excelArray[] = $e;
+                    unset($e);
+                }  
                 break;
 
             case 'successfull':
@@ -994,8 +1005,60 @@ class ReportController extends Controller
     }
 
     public function brandSizeReport(Request $request){
-        print_r($request->all());
-        exit("working");
+
+        $result = Brands::query();
+        $result = $result->select("brands.id as b_id", "brands.BrandName as b_name", "c.id as c_id", "c.Category as c_name", "sk.id as sk_id", "sk.name as sk_name", "sh.id as sh_id", "sh.name as sh_name", "ci.id as ci_id", "ci.name as ci_name");
+        $result = $result->join("categories as c", "c.brand_id", "=", "brands.id", "inner");
+        $result = $result->join("skus as sk", "sk.category_id", "=", "c.id", "inner");
+        $result = $result->join("shops as sh", "sh.brand_id", "=", "brands.id", "inner");
+        $result = $result->join("cities as ci", "sh.city_id", "=", "ci.id", "inner");
+
+        if($request->brand != -1){
+            $result = $result->where('brands.id', $request->brand);
+        }
+
+        if(!in_array(-1, $request->categories)){
+            $result = $result->whereIn('c.id', $request->categories);
+        }
+
+        if(!in_array(-1, $request->skus)){
+            $result = $result->whereIn('sk.id', $request->skus);
+        }
+
+        if(!in_array(-1, $request->shops)){
+            $result = $result->whereIn('sh.id', $request->shops);
+        }
+
+        if(!in_array(-1, $request->cities)){
+            $result = $result->whereIn('ci.id', $request->cities);
+        }
+
+        $result = $result->get();
+
+        $response['brands'] = [];
+        $response['categories'] = [];
+        $response['skus'] = [];
+        $response['shops'] = [];
+        $response['cities'] = [];
+
+        foreach ($result as $key => $value) {
+            if(!array_key_exists($value->b_id, $response['brands'])){
+                $response['brands'][$value->b_id] = [$value->b_id, $value->b_name];
+            }
+            if(!array_key_exists($value->c_id, $response['categories'])){
+                $response['categories'][$value->c_id] = [$value->c_id, $value->c_name];
+            }
+            if(!array_key_exists($value->sk_id, $response['skus'])){
+                $response['skus'][$value->sk_id] = [$value->sk_id, $value->sk_name];
+            }
+            if(!array_key_exists($value->sh_id, $response['shops'])){
+                $response['shops'][$value->sh_id] = [$value->sh_id, $value->sh_name];
+            }
+            if(!array_key_exists($value->ci_id, $response['cities'])){
+                $response['cities'][$value->ci_id] = [$value->ci_id, $value->ci_name];
+            }
+        }
+        echo json_encode($response);
     }
 
 
