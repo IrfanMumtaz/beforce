@@ -189,8 +189,76 @@ class ReportController extends Controller
         $date[0] = $req['report_from'] ? $req['report_from']. " 00:00:00" : date('Y-m-d H:i:s');
         $date[1] = $req['report_to'] ? $req['report_to']. " 23:59:59" : date('Y-m-d H:i:s');
 
+
+
+        while (strtotime($date[0]) <= strtotime($date[1])){
+
+            // $created_at = array();
+            
+
+            $created_at[0] = date ("Y-m-d 00:00:00", strtotime($date[0]));
+            $created_at[1] = date ("Y-m-d 23:59:59", strtotime($date[0]));
+
+            $brand = Brands::query();
+            $brand = $brand->select(DB::raw('LEFT(t.created_at, 10) as categories'),db::raw('(s.price * t.skutargets) as targets'));
+            $brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
+            $brand->join('skus as s', 's.category_id', '=', 'c.id', 'inner');
+            $brand->join('skutargets as t', 's.id', '=', 't.sku_id', 'inner');
+            $brand->join('shops as sh', 'sh.brand_id', '=', 'brands.id', 'inner');
+
+            if($req['brand'] != -1){
+                $brand->where('brands.id', $req['brand']);
+            }
+            if($req['shops'] != -1){
+                $brand->where('sh.id', $req['shops']);
+            }
+            if($req['categories'] != -1){
+                $brand->where('c.id', $req['categories']);
+            }
+            if($req['cities'] != -1){
+                $brand->where('sh.city_id', $req['cities']);
+            }
+            $brand->whereBetween('t.created_at', $created_at);
+            $brand = $brand->get();
+
+            echo json_encode($brand);
+            $date[0] = date ("Y-m-d H:i:s", strtotime("+1 day", strtotime($date[0])));
+        }
+            exit();
+
+            /*$sales = Sales::query();
+            $sales->select(db::raw('sum(t.skutargets) as targets'));
+            $sales->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
+            $sales->join('skus as s', 's.category_id', '=', 'c.id', 'inner');
+            $sales->join('skutargets as t', 's.id', '=', 't.sku_id', 'inner');
+            $sales->join('shops as sh', 'sh.brand_id', '=', 'brands.id', 'inner');
+
+            if($req['brand'] != -1){
+                $sales->where('brands.id', $req['brand']);
+            }
+            if($req['shops'] != -1){
+                $sales->where('sh.id', $req['shops']);
+            }
+            if($req['categories'] != -1){
+                $sales->where('c.id', $req['categories']);
+            }
+            if($req['cities'] != -1){
+                $sales->where('sh.city_id', $req['cities']);
+            }
+            $sales->whereBetween('t.created_at', $created_at);
+            $sales = $brand->first();*/
+
+            $return[] = ['categories' => date ("Y-m-d", strtotime($date[0])), 'sale_targets' => $brand->targets];
+
+            
+            $date[0] = date ("Y-m-d H:i:s", strtotime("+1 day", strtotime($date[0])));
+        
+
+        echo json_encode($return);
+        exit();
+
         $brand = Brands::query();
-        $brand->select(DB::raw('LEFT(t.created_at, 10) as categories'), DB::raw('sum(s.Price) * sum(t.skutargets) as sale_target'), DB::raw('sum(s.Price) * sum(o.noItem) as sale'));
+        $brand->select(DB::raw('LEFT(t.created_at, 10) as categories'), DB::raw('s.Price * sum(t.skutargets) as sale_target'), DB::raw('s.Price * sum(o.noItem) as sale'));
         $brand->join('categories as c', 'c.brand_id', '=', 'brands.id', 'inner');
         $brand->join('skus as s', 's.category_id', '=', 'c.id', 'inner');
         $brand->join('skutargets as t', 's.id', '=', 't.sku_id', 'inner');
@@ -212,6 +280,8 @@ class ReportController extends Controller
         $brand->whereBetween('o.created_at', $date);
         $brand->groupBy('categories');
         $result = $brand->get();
+        /*print_r($result);
+        exit();*/
 
         echo json_encode($result);
     }
